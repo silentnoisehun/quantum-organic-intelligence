@@ -1,0 +1,357 @@
+================================================================================
+A FLUID STRATOS MERESE — 2026-10-26
+================================================================================
+Keszitette: Mavis (MiniMax Code)
+Mates utasitasara: "szamolj elobb szimulacioval, elore" + "most merjunk meg"
+
+Allitas: ahol meresi bizonyitek van, ott a szam. Ahol nincs, ott
+"nem verifikalva". Semmi nem szerepel itt forras nelkul.
+
+--------------------------------------------------------------------------------
+0. A FENEK: MI TORTENT, ES MIT MERETTUNK
+--------------------------------------------------------------------------------
+Mates bemutatott:
+  - a "Fluid Organic Intelligence" paper-t (2024. dec, M. Robert, independent)
+  - egy launchpad video-t (64 LED-es racs)
+  - egy kepet
+  - a gpe.rs forras kodot (amit le is szedett a gepen)
+
+A kerdes: "nem a gepen a githubon" -> a 5 quantum repo a GitHubon volt.
+A kesztyu: a QUANTUM reteg a claude-logic-ban DEAD CODE volt (mod quantum;
+de egyetlen hivas). A dead-code QUANTUM reteg + az 5 hardver-meres repo
++ a Fluid STRATOS paper egyuttal: a HOLT RETEG ELJOVO TETT.
+
+Miert lett a launchpad a kulcs: a hope-cli/src/fluid_stratos/mod.rs
+Default = Self::new(64) -- a 64-es racs a launchpad merete.
+A launchpad renderer: D:\codex\Hope Wave protocol Studio\crates\
+  studio-bridge\src\launchpad.rs (38.7 KB, GRID_LED_COUNT = 64)
+
+--------------------------------------------------------------------------------
+1. A HOLT-KOD TENY: A QUANTUM RETEG NEM FUT
+--------------------------------------------------------------------------------
+MERES (grep, D:\All_Skills\claude-logic\src\main.rs):
+  "mod quantum;"  -> 1 talalat, sor 17
+  QuantumCircuit / encode_energies / measure -> 0 hivas
+
+  quantum.rs:59  measure() = klasszikus argmax az energiatomban
+  quantum.rs:7   "O(n) helyett O(1)" komment
+
+  status: a QUANTUM reteg halott kod. Nem "gyenge implementacio" --
+  NEM LE SZAMOLVA EGYALTAL.
+
+  A 16 "qubit" a ketton:
+    - a QuantumBackend::IbmEagle enum-ertek SOHA nem hasznalja a measure()-t
+    - a meres mindig klasszikus argmax -> 0 qubit
+
+--------------------------------------------------------------------------------
+2. A KVANTUMHID-SZIMULACIO: A REPRODUKCIO A GEPES KODDAL
+--------------------------------------------------------------------------------
+Bemenet: a valós STRATOS allapot, D:\All_Skills\claude-logic\stratos.bin
+  - 32x32 racs, 16 kognitiv mod, 1024 komplex pont
+  - a stratos-probe a SAJAT stratos.rs-t include-olta (nincs atiras)
+  - a stratos.bin SHA256 a probe UTAN: 1396489976FAA8CD (változatlan)
+
+A 16 mod energija (normalizalt, osszeg = 1):
+  Brain       0.09620959   Creativity 0.09443425
+  Memory      0.08902975   Heart      0.08851945
+  Intuition   0.08038322   Logic      0.07677600
+  Focus       0.07562627   Ethics     0.05810160
+  Play        0.06105229   Synthesis  0.05413618
+  Dream       0.04328244   Analysis   0.03608653
+  Social      0.03946274   Survival   0.04136071
+  Transcend.  0.03620027   Empathy    0.02933872
+
+A RES: Brain (0.096210) vs Creativity (0.094434) = 0.001775, azaz 1.85%
+
+A KVANTUMHID SZIMULACIOJA (Monte Carlo, 16 qubit, 1024 shot,
+  depolarizalo zaj c = a MERT Bell-egyensuly):
+  c=1.000 (nulla zaj) -> pontossag 42.29%   Brain 42.3%, Creativity 30.4%
+  c=0.993              -> 41.73%
+  c=0.981              -> 40.85%
+  c=0.950              -> 39.03%
+  c=0.877 (a 7 SCS futas legrosszabb) -> 35.31%
+
+  A KLASSZIKUS argmax: 100% (0 statisztikai hiba, 0 shot, 0 job)
+
+  AZ ELLENORZES: a Brain-Creativity res 1024 shot-tal 0.14 sigma
+  (SEM_diff = 0.012978). 3-sigmahoz 248 294 shot kellene -> 242x a
+  QDS 1024-es, 124x a wave-quantum 2000-es. A 20%-os res eseten
+  3007 shot elegendone lenne.
+
+  KOVETKEZTETES: a QUANTUM reteg a jelenlegi architekturaban nem
+  elony, hanem KOVETKEZET. A feladat determinisztikus argmax egy
+  helyi allapotfajlbol -- a hardver csak zajt vinne be.
+
+  A 16 mod 16 parancsolt qubiton kulon-kulon versenyezne = 16 job
+  a kvotaban, 16*1024 = 16384 loves. A klasszikus: 0 loves, 0 job.
+  (A "javított" SCS sema A/f/phi kulon merest 48 jobot igényelne.)
+
+--------------------------------------------------------------------------------
+3. A HOLT-KOD TABLAZAT (a 5 quantum repo mérései alapjan)
+--------------------------------------------------------------------------------
+  HOLT-KOD                     | MERT ELLENORZES                  | SULY
+  -----------------------------|----------------------------------|------
+  dead_code (mod quantum;)     | grep: 0 hivas a main.rs-ben       | igazolt
+  nincs kvantum-meres          | quantum.rs:59 klasszikus argmax  | igazolt
+  a 16 marginalis ZAJALAPU     | szim: 42.3% (c=1.0) vs 100%      | igazolt
+  a res nem kimutathato         | 0.14 sigma @1024 shot            | igazolt
+  a folyadék nem megy 16 qubitra| 32x32 = 1024 komplex pont        | igazolt
+  "O(1) helyett O(n)" nem teljesul| 16 kor x 1024 shot vs 0         | igazolt
+  NEM hiba: az encoding         | theta=2*asin(sqrt(E)) -> P=E     | JAVITVA
+  NEM hiba: a 3 parametris SCS  | hullamcsomag, nem 16 modos elosz  | pontositva
+
+  A holt-kod javitasai (ha egyaltalan bekotjuk):
+    1. a QUANTUM reteget EL KELL DONTENNI, hogy bekovet-e -> most
+       nincs hatos hiba, csak nincs kod
+    2. ha bekovet: az amplitude-estimation O(sqrt(N)) elony N>10^4-nel
+       mukodne; 16 modnal NEM
+    3. a döntest a STRATOS-bol kell venni, nem a hardverbol
+
+--------------------------------------------------------------------------------
+4. A REPRODUKCIO: A FLUID STRATOS A GEPEN
+--------------------------------------------------------------------------------
+A GITHUB repok (Fluid-STRATOS, Hope-Genome): HTTP 404 -> private vagy
+torolt. A SAJAT Python implementacio nem auditalhato.
+
+DE a gepen VAN:
+  D:\codex\tudat\crates\hyper-spine\src\stratos\gpe.rs (13 574 B)
+  D:\codex\tudat\crates\hyper-spine\src\stratos\gpe_parallel.rs (12 831 B)
+  D:\codex\tudat\crates\hyper-spine\src\stratos\adaptive_landscape.rs (8 085 B)
+  D:\codex\tudat\crates\hyper-spine\src\stratos\emotimem.rs (10 363 B)
+  D:\codex\tudat\crates\hyper-spine\src\stratos\resonance_bridge.rs (12 942 B)
+  D:\codex\hope-cli\src\fluid_stratos\mod.rs (13 247 B)  <- Default = new(64)
+  D:\codex\hope-cli\src\stratos\gpe.rs (11 B) -> URES
+  D:\codex\hope-cli\src\stratos\landscape.rs (70 B) -> URES
+
+A gpe.rs parametrai EGYEZNEK a paper A.2 tablarzataval:
+  grid 128x128, domain 20.0, dt 0.005, g -1.0, trap 0.1, well_depth 2.0,
+  damping 0.002, hbar 1.0, mass 1.0
+
+--------------------------------------------------------------------------------
+5. A DÖNTŐ MERES: A gpe.rs NEM OLD FEL A GPE-EGYENLETET
+--------------------------------------------------------------------------------
+A MERES (64x64, a gpe.rs kodja VERBAL, 500 lep):
+  0 lep : C=1.0000000000  max|d^2| = 0
+  1 lep : C=1.0000000000  max|d^2| = 1.332e-15
+  10 lep: C=1.0000000000  max|d^2| = 3.775e-15
+  100 lep: C=1.0000000000  max|d^2| = 4.285e-14
+  500 lep: C=1.0000000000  max|d^2| = 1.126e-13
+  a 16 mod energia max valtozasa: 1.243e-14
+  a fazis 1 lepese utan: max delta 0.4934 rad (a minta MOZOG)
+
+  A 64x64 -> 8x8 downscale AZONOS 0 / 500 / 2000 / 5000 lepesekben
+  (center/mean=1.099, max/mean=1.75, entropy=5.993 mindenkor)
+
+A BIZONYITAS:
+  A gpe.rs step()-ben minden muvelet vagy
+    (a) fazis-szorzas -> |psi * e^{i theta}| = |psi|, nem valtoztatja a
+        moduluszt; vagy
+    (b) uniform skalas (damping exp(-gamma*dt), normalizalas 1/norm)
+        -> nem valtoztatja a RATIO-t.
+  A normalizalas a dampinget KIESIKTELIT:
+    norm_new = decay * norm_old
+    |psi_new| = |psi_old| * decay / (decay * norm_old) = |psi_old|/norm_old
+  NETTO: a lepes a FZ-t forogja, a MODULUSZT NEM.
+
+  A ket kinetikus lepes a k-space-ben csak fazist ad (gpe.rs:240-268),
+  NINCS FFT, NINCS oszcillacio. A gpe_parallel.rs:251-252 ezt
+  explicit kommenteli: "Mivel nincs FFT kodkonyvtar, a kinetikus
+  reszt fazis-rotaciokent kozelitjuk".
+
+  A KOVETKEZMENY:
+    - a nem-ldrensz feloldasa SOHA nem tortenik meg
+    - a 16 mod energiaja SOHA nem valtozik
+    - a koherencia SOHA nem valtozik
+    - az adaptiv landscape (3 rezsim) SOHA nem aktiválodna
+
+  A paper's "Initial chaos: C<0.2 (cycles 0-8000)" ALLITAS a gpe.rs
+  altal implementalt rendszerben NEM LEHETETES: a C mindig 1.0.
+
+AZ OSSZEHASONLITAS: a claude-logic/src/stratos.rs (2026-03-24) valodi
+FFT-t csinal (rustfft dependency). 32x32, 20 lep:
+  max|delta| a suturdens-eloszlasban: 2.082e-02
+  max/mean: 70.63 -> 67.46   (VALTOZIK)
+  => a valodi FFT poziciok kozott kever -> a folyadék tenylegesen elszorul.
+  A gpe.rs nem.
+
+--------------------------------------------------------------------------------
+6. A KOHERENCIA-FORMULA: HARROM IMPLEMENTACIO, HARMAS 1.0
+--------------------------------------------------------------------------------
+  paper Eq. 5   : tanh( max / (mean/15) )      = tanh(15 * max/mean)
+  gpe.rs:200    : tanh( (max/mean) / 15 )
+  claude-logic  : min(1, max/(mean * n*n * 0.01 + 1e-10))   -- LINEA RIS
+
+  A MERT max/mean arany: 996.17 (64x64, fazi-rotacio)
+                        2726.34 (64x64, igazi FFT)
+                        1463.72 (128x128, 20 000 lep)
+  Mindket tanh-varians 1.0000-t ad ezeken az aranyokon.
+  => a tanh skala NEM a hiba. A gyoker az, hogy a max/mean 996-2726,
+     azaz a sűrűség egyetlen PONTBA koncentralodik (a 16 csap kozepen),
+     a mean pedig a racs atlagja. A "koherencia" itt a NORMALIZACIO
+     artefaktuma, nem a rendszer tulajdonsaga.
+
+  A 16 mod pontjaban a sűrűség: max/global_mean = 14.2.
+  A maximum helye: (33,32) -- a legkozelebbi modtol 1 racscsucs.
+  A 8x8 downscale-ban a 20%-on feluli "fenyes" cellak: 3 / 64.
+
+--------------------------------------------------------------------------------
+7. A NYELVI DEKODOLAS: PROGRAMOZOTT LOOKUP, NEM EMERGENS
+--------------------------------------------------------------------------------
+  A paper: "This mapping is not programmed. It emerges through
+  self-organization." -- 42 magyar fonema, 4 karakteres szo,
+  P_random ~ 3.2e-7, a "jo-vo" emelkedese 0-8000 -> 20000 ciklusban.
+
+  A KOD (hope-cli/src/fluid_stratos/mod.rs:90-127) create_frequency_map():
+    34 magyar fonema, EGYENLETESEN 0.03 lepesekkel, 0.00-tol 0.99-ig.
+    Ez EGY PROGRAMOZOTT LOOKUP TABLE -- a kod indulasa elott benne van.
+
+  TOBBET: a fonema-listaban NINCS 'v'. A magyar 'v' (hagymanyzo 'w')
+  nem magyar fonema. A "jo-vo" masodik karaktere 'v' -> a kod SOHA
+  nem generalhat 'jovo'-t a nyelvi dekodozason keresztul.
+  A lista: a á b c cs d dz dzs e é f g gy h i í j k l ly m n ny o ó ö ő p r
+           s sz t ty u   (34 db)
+
+  A mod-nevek: a paper 16 neve es a claude-logic 16 neve 11/16 helyen
+  kulonbozik, ES az indexek is masok (a kod signal_to_mode() a
+  paperos hozzendelelesrol teljesen mas indexeket hasznal).
+
+  A "jo-vo"'emergencia tehát a sajat Python implementaciohoz tartozik,
+  es a gepen lévo Rust kodban NINCS meg. Auditálhatatlan.
+
+--------------------------------------------------------------------------------
+8. A PAPER vs A KOD: A PAPERS NYOLC REZSIM, A KODBAN NINCSE
+--------------------------------------------------------------------------------
+  A paper adaptiv landscape (Eq. 4): 3 rezsim a koherencia szerint
+    C>0.75  -> V_barrier  (fokuszalt)
+    0.45-0.75 -> V_flat  (folyas)
+    C<0.45  -> V_channels (szcatterelt)
+    A KODBAN: nincs. apply_potential_step() mindig ugyanazt rakja.
+
+  A paper nyelvi dekoding (Fourier f_dom -> token): A KODBAN nincs.
+  A paper 128x128 racs: a gpe.rs IS 128x128 (egyezes).
+
+  A SSFM sorrend:
+    paper: K/2 -> V -> K/2
+    kod:   V/2 -> K -> V/2    (claude-logic stratos.rs)
+    Mindketto 2. rendu idorekony, de a NEMLINEARIS g|psi|^2 tag miatt
+    a sorrend nem ekvivalens.
+
+  A launchpad render (launchpad.rs:327-419) a STRATOS folyadékot
+  NEM mutatja: 5-6 forrasbol korhullamokat rajzol (1.9-es hullamhossz,
+  falloff 1/(1+dist*0.52)). Nincs centralis fokusz, nincs 16 mod.
+  A frekvenciak launchpad.rs:363-ban 0.1-2.0 Hz-re szorulnak
+  (freq.clamp(0.1, 2.0)) -> a system(4.0), cpu(12.0), emotion(80.0),
+  blade(150.0), voice(200.0) MIND 2.00 Hz-re esik. Csak az other
+  (0.5 Hz) marad alacsonyabb.
+
+  A launchpad ASCII render (fokuszalt, 5 forras, phase 0):
+    |.:::..:.|
+    |.:::.:+:|
+    |:::::::.|
+    |:::+::..|
+    |...:::..|
+    |...:::::|
+    |:::.::::|
+    |.:......|
+  -> a minta a forrasok poziciojanak TUKROJE, nem folyadek.
+
+--------------------------------------------------------------------------------
+9. A HOLT-KOD ARCHITEKTURA (a claude-logic-ban)
+--------------------------------------------------------------------------------
+  A main.rs 8 retege: INPUT -> PSI -> STRATOS -> INTERSECTION ->
+  MATRIOSKA -> MICROSCOPE -> PREDICTION -> QUANTUM
+  A QUANTUM a 8. -- es dead code.
+
+  A stratos.bin ALLAPOT: 16 400 B, utolso iras 2026-03-24 12:56:45.
+  A status parancs NEM ir (hash: 1396489976FAA8CD a status utan is).
+  A main.rs a routerben field.evolve(5)-ot hív -> 5 numerikus lepes.
+  A dt=0.005 NUMERIKUS lepes, nem fizikai ido.
+
+  A cube.rs:269 face_phase() HOLT KOD (nem hasznalt).
+  A cube.rs kommentje: "A megfigyelő nem a face 0. A megfigyelő az
+  anchor érték maga." -- a doksi (078) a REGISZTRACIOT, a kod az UJAT.
+
+--------------------------------------------------------------------------------
+10. AZ 5 QUANTUM REPO: A HOLT RETEG ELJOVO TETT
+--------------------------------------------------------------------------------
+  wave-quantum: frekvencia->korrelacio, Pearson 0.8732-0.9989
+    (VISSZASZAMOLVA a referee_stats.json-bol, egyezik a README-vel).
+    5-futases drift-falsifikacio: r = 0.99940 +- 0.00013, rel. szoras
+    0.0132% vs a QDS 43.7%-a. AZ ALLITAS ALL.
+  quantum-delayed-sync: T2_eff = 89.6 +- 39.2 us, kalibralt 121.26 us,
+    1024 shot, 5 futas. A QDS_CHRONICLE a hibakat is rogziti.
+  quantum-anchor: Phase 0 repeat global coherence 1.27%,
+    Wilson 95% CI [0.74%, 2.16%], clear rate 0%. A TAUTOLOGIA-CSATAROZAS
+    VISSZAVONVA. A git log: "Phase 0 repeat confirmed DONE ... 1.27%
+    global coherence (0^8=6, 1^8=7)".
+  quantum-anchored-memory: a D9 store success_rate 0.028, entropy 4.88.
+    A rust/src/main.rs STUB (hardcoded 0.9998). A qam_memory.py a
+    `data` parametert ELDOBJA. Audit-trail hiba: a qam_real_results.json
+    a 99.41%-es eredményhez a db7uus8r1c5c738lc8i0 job ID-t irja, de
+    az a job a 45.31%-os ROSSZ qubit eredménye.
+  scs-quantum: a Rust mag 36/36 TESZT ZOLD (cargo test --release,
+    EXIT=0, izolalt [workspace] tablaval). DE a repoban NINCS nyers
+    adatfajl (0 db) -- a 7 Bell-futás (87.7-99.3%) csak a README
+    tablazataban es a runlog3.txt CI-kimeneteben lathato.
+
+  A TANULSAG: mind az 5 repo a DENIAL-bol tanul, es mindegyik
+  VISSZAVONASIG is elvezet. A Silent Worker Teaching Method
+  ("The AI learns through DENIAL, not through weight modification")
+  gyakorlati pelda: a QUANTUM reteg halott kodja is egy DENIAL.
+
+--------------------------------------------------------------------------------
+11. A MAVIS SAJAT MUTATJA — A HOOK-OK MÁR EGY MUVKO DÓNTESEK
+--------------------------------------------------------------------------------
+  A Stop hook a transcriptbol bontja ki a kudarcot -> reflections/8 +
+  OPEN LOOP. A PostToolUse hook a wave-echo feedback <id>-vel LTP-vel
+  tanul. A spine fail-closed. A parse-hiba fail-closed (logol, nem ir).
+  Ezek mind a "denial -> tanulsag" mukodesi modell peldai.
+
+  A DENY != HIBA a tanitasi modellben:
+    - a QDS kontrollkar a fizikait arbitralja (nem disz)
+    - a spine-on a KONTENCIO != HIBA (a publisher várakozik), DE a
+      parse-hiba fail-closed (a tranzakcio megall)
+
+  A MOSTANI MERES maga is egy denial: a gpe.rs DENIAL-t kapott.
+
+--------------------------------------------------------------------------------
+12. A KOVETKEZO LEPES — A MERES UTAN, NEM ELOTTE
+--------------------------------------------------------------------------------
+  A) A HOLT-KOD DOLGOZAT (a QUANTUM reteg dontese)
+     - a stratos.rs valodi FFT-es, igazi GPE-t old -> a folyadek tenyleg
+       elszoruljon (igazolt: max/mean 70.63 -> 67.46)
+     - a gpe.rs javitasa: tenyleges FFT a kinetikus lepesben
+     - a koherencia-formula EGYETLENSITESE (3 implementacio, 3 formula)
+     - a 16 mod -> 16 qubit onkenti verseny HELYETT: amplitude estimation,
+       vagy a 16 mod maradjon klasszikus (a merés szerint jobb)
+  B) A PAPER AUDIT
+     - a Fluid-STRATOS / Hope-Genome repo privat -> a sajt Python
+       implementacio keresse a gepen (a paper's egyetlen meresi
+       eredmenye, a "jo-vo", auditálhatatlan igy)
+     - a 128x128 vs 32x32 racs hatasa a koherenciara
+  C) A DOCSI-KOD DIVERGENCIA (a claude-logic-ban)
+     - a 078 doksi a regi face-0 modellt orzi, a cube.rs az ujat
+     - a stratos.bin 7 honapos allapot -> ujraszamitas
+  D) A LAUNCHPAD VISSZAALLITASA
+     - a renderer megvan (launchpad.rs), a HARDVER nincs fent
+     - a studio-bridge probably meg tudja csatlakoztatni a launchpadot
+     - a stimulus reprodukalhato szoftveresen (a fenti ASCII)
+
+  A MERES RENDEKTELEN: a QUANTUM reteg nem hotfixelendo, hanem
+  dontendo. A DONTES ELOTT nem lehet "megjavitani" -- a 42.3% vs 100%
+  merés azt mondja, hogy a klasszikus ut nyer a jelenlegi architekturaban.
+
+================================================================================
+A MERESI FJLLOK (ebben a workspace-ben):
+  quantum-bridge-sim.py           kvantumhid-szimulacio
+  quantum-bridge-sim2.py          res/kimutathatosag/Grover/koltseg
+  quantum-bridge-sim3.py          ablak-atfedes + amplitude estimation
+  paper-vs-code.py                paper vs claude-logic parameterek
+  fluid-stratos-measure.py        GPE 64x64 + 128x128, 20 000 lep
+  fluid-stratos-variants.py       fazi-rotacio vs igazi FFT
+  coherence-scale-check.py        a koherencia ket skala
+  max-mean-root-cause.py          a max/mean 996.17 gyokere
+  gpe-invariance-test.py          A DÖNTŐ TESZT (invariancia)
+  launchpad-stimulus.py           a launchpad render reprodukcioja
+  stratos-probe/                  a valos stratos.rs probe (read-only)
+================================================================================

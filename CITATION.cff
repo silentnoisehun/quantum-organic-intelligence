@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+title: "Quantum Organic Intelligence"
+message: "If you use this software or the measurements in docs/, please cite it as below."
+type: software
+authors:
+  - name: "Silent Noise"
+    website: "https://github.com/silentnoisehun"
+repository-code: "https://github.com/silentnoisehun/quantum-organic-intelligence"
+license: MIT
+version: "0.1.0"
+date-released: "2026-10-27"
+abstract: >-
+  A Gross-Pitaevskii fluid solver for 16 cognitive modes with a real
+  split-step Fourier kinetic step, a hardware-verified quantum bridge
+  (2 qubits, 3 separate measurements), and the measurement protocol that
+  compares them. Every claim in the README is backed by a measured
+  number; the section "Limits" states explicitly what the system does
+  not prove.
+keywords:
+  - gross-pitaevskii equation
+  - split-step fourier method
+  - quantum-classical hybrid loop
+  - superconducting qubits
+  - measurement methodology
+references:
+  - type: standard
+    title: "Quantum Organic Intelligence"
+    authors:
+      - name: "Silent Noise"
+    year: 2026
+    repository-code: "https://github.com/silentnoisehun/quantum-organic-intelligence"

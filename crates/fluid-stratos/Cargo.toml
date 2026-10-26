@@ -1,0 +1,16 @@
+[package]
+name = "fluid-stratos"
+version = "0.1.0"
+edition = "2021"
+description = "Gross-Pitaevskii folyadékmotor 16 kognitív módra, valodi split-step Fourier kinetikus lepespel"
+license = "MIT"
+
+# A `D:\codex` munkaterulo workspace-e ne kapja el ezt a crate-et.
+[workspace]
+
+[dependencies]
+num-complex = "0.4"
+rustfft = "6.0"
+rand = "0.8"
+rand_chacha = "0.3"
+rayon = "1.10"
