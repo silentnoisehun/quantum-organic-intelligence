@@ -147,6 +147,39 @@ python scripts/quantum_loop_sim.py
 python scripts/quantum_10shot_math.py
 ```
 
+### A valós hardveres mérés
+
+A kvantumhíd **valódi QPU-n** is futtatható. A token az `IBM_QUANTUM_API_TOKEN`
+környezetváltozóban kell (a `scs_quantum` saját `.env` fájlját is betölti) —
+**soha ne a parancssorban, soha ne fájlba írva a repóban**.
+
+```bash
+# a pipeline ellenőrzése ideális szimulátoron — token NEM kell,
+# de ez NEM QPU-bizonyíték, csak a kód helyességének igazolása
+python scripts/hardware_measure.py --local
+
+# a valódi hardver: a Bell-fidelity, a 16 mód argmax, az (A, f, φ) dekódolás
+python scripts/hardware_measure.py --backend ibm_brisbane --shots 1024 --mode-trials 20
+```
+
+A mérés három dolgot mér:
+1. a **bit-sorrend-ellenőrzés** — a mérés előfeltétele; ha nem megy át, a mérés elutasításra kerül
+2. a **hardver-minőséget** (a Bell-referencia egyensúlya) → ez a szimulációban használt `c`
+3. a **16 mód argmax pontosságát** a klasszikus argmaxhoz képest, és az **(A, f, φ) dekódolás** pontosságát
+
+A nyers mérési adatok a `measurement_raw/` mappába kerülnek (a job ID-vel, a
+backenddel és az időbélyeggel) — ez **nincs verziókövetve**.
+
+> **Környezet:** a méréshez tiszta virtuális környezet ajánlott. A Qiskit 1.x és
+> 2.x nem él együtt ugyanabban a Pythonban:
+> ```bash
+> python -m venv .venv-quantum
+> .venv-quantum/Scripts/pip install "qiskit>=2.0" "qiskit-ibm-runtime>=0.50" python-dotenv numpy
+> .venv-quantum/Scripts/python scripts/hardware_measure.py --local
+> ```
+> A `scs_quantum` csomag telepített példány hiányában a `SCS_QUANTUM_PATH`
+> környezetváltozó mutatja a `python/` mappát.
+
 A mérések mind **determinisztikus magokkal** futnak, így a számok reprodukálhatók.
 
 ---

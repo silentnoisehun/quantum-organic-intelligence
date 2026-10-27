@@ -117,12 +117,27 @@ def encode_mode_energies(energies) -> CircuitSpec:
 
 # ── a dekódolás ────────────────────────────────────────────────────────
 def _p_q0_one(counts) -> float:
-    """P(q0=1) a 2 bites kulcsokból: 0x1 és 0x3."""
+    """P(q0=1) a 2 bites kulcsokból: a q0=1 esetek aránya."""
     total = sum(counts.values())
     if total == 0:
         return 0.0
-    hits = counts.get("0x1", 0) + counts.get("0x3", 0)
+    hits = 0
+    for key, n in counts.items():
+        if _bits(key, 2)[0] == "1":
+            hits += n
     return hits / total
+
+
+def _p_q0_zero(counts) -> float:
+    """P(q0=0) a 2 bites kulcsokból."""
+    total = sum(counts.values())
+    if total == 0:
+        return 0.0
+    zeros = 0
+    for key, n in counts.items():
+        if _bits(key, 2)[0] == "0":
+            zeros += n
+    return zeros / total
 
 
 def decode_phase(p_q0_one: float) -> float:
@@ -141,13 +156,58 @@ def decode_amplitude(p_q0_zero: float) -> float:
 
 
 # ── a mérés futtatása ──────────────────────────────────────────────────
+def to_qiskit(spec, QuantumCircuit):
+    """A `CircuitSpec` → Qiskit áramkör, a Qiskit 2.x paramétersorrendjével.
+
+    🧬 A QISKIT 2.x VÁLTOZÁS: a forgó kapuknál a paraméter megy először
+    (`qc.ry(θ, qubit)`), nem a kvantumindex. Az 1.x-es sorrend
+    (`qc.ry(qubit, θ)`) a 2.x-ben `CircuitError`-t dob. A kétkvantumos
+    kapuknál (`cx(control, target)`) a sorrend változatlan.
+
+    🧬 A BIT-SORREND: a klasszikus regiszter 0. bitje a jobb oldali
+    karakter, tehát a `bits[0]` a q0. A `counts` kulcsformátuma kétféle
+    lehet: a szimulátor a sima bináris formát adja ("00"), a QPU a
+    "0x0" formátumot — a `_bits()` normalizálja mindkettőt.
+    """
+    TWO_QUBIT = {"CX", "CNOT", "CZ", "SWAP", "ISWAP"}
+    qc = QuantumCircuit(spec.qubits, spec.qubits)
+    for g in spec.gates:
+        if g.gate_type in TWO_QUBIT:
+            if len(g.qubits) != 2:
+                raise ValueError(
+                    f"{g.gate_type} két kvantumot kér, {len(g.qubits)} megadva")
+            gate = {"CX": "cx", "CNOT": "cx", "CZ": "cz",
+                    "SWAP": "swap"}.get(g.gate_type, g.gate_type.lower())
+            getattr(qc, gate)(int(g.qubits[0]), int(g.qubits[1]))
+        else:
+            gate = {"H": "h", "X": "x", "Y": "y", "Z": "z",
+                    "RY": "ry", "RZ": "rz"}.get(g.gate_type, g.gate_type)
+            for q in g.qubits:
+                if g.params:
+                    getattr(qc, gate)(g.params[0], int(q))
+                else:
+                    getattr(qc, gate)(int(q))
+    qc.measure(range(spec.qubits), range(spec.qubits))
+    return qc
+
+
+def _bits(key, n):
+    """A counts kulcs → a bitek listája, a q0 elöl (a jobb oldali bit)."""
+    k = str(key).replace(" ", "").replace("0x", "").replace("0X", "")
+    if not k:
+        return ["0"] * n
+    k = k.zfill(n)
+    return list(reversed(k))
+
+
 def run_spec(runner, spec: CircuitSpec, shots: int, label: str):
     """Egy áramkör beküldése és a counts visszajátszása.
 
-    A pipeline-t a scs_quantum `tkr_ibm` implementációja végzi
-    (transzpilálás, sampler primitív, nyers adat mentés).
+    A transzpilálást és a sampler primitívet a scs_quantum `tkr_ibm`
+    implementációja végzi; a spec → Qiskit konverzió itt, a 2.x
+    paramétersorrend szerint.
     """
-    qc = tkr_ibm.to_qiskit(spec, runner.QuantumCircuit)
+    qc = to_qiskit(spec, runner.QuantumCircuit)
     if runner.local:
         job = runner.backend.run([qc], shots=shots)
         counts = job.result()[0].data.c.get_counts()
@@ -197,8 +257,9 @@ def measure_hardware_fidelity(runner, shots: int):
     total = sum(counts.values())
     bal = 0
     for key, n in counts.items():
-        k = str(key).replace(" ", "")
-        if set(k) <= {"0"} or set(k) <= {"1"}:
+        b = _bits(key, 2)
+        # a Bell-allapot a |00> es |11> felre kerul: mindketto bit egyezik
+        if b[0] == b[1]:
             bal += n
     fidelity = bal / total if total else 0.0
     save_raw("bell", counts, job_id, backend_name, shots,
@@ -223,9 +284,9 @@ def measure_mode_argmax(runner, shots: int, trials: int):
         hits = [0] * 16
         total = 0
         for key, n in counts.items():
-            k = str(key).replace(" ", "")
+            b = _bits(key, 16)
             total += n
-            for i, ch in enumerate(reversed(k)):   # a q0 a legalacsonyabb bit
+            for i, ch in enumerate(b):
                 if ch == "1":
                     hits[i] += n
         best = max(range(16), key=lambda i: hits[i])
@@ -246,8 +307,7 @@ def measure_wavepacket(runner, shots: int):
     a_true, f_true, phi_true = 1.0, 0.25, 1.0
     results = {}
     for name, spec, decoder, true_val in [
-        ("A", encode_amplitude(a_true), lambda c: decode_amplitude(
-            sum(n for k, n in c.items() if set(str(k).replace(" ", "")) == {"0"}) / max(1, sum(c.values()))), a_true),
+        ("A", encode_amplitude(a_true), lambda c: decode_amplitude(_p_q0_zero(c)), a_true),
         ("f", encode_frequency(f_true), lambda c: decode_frequency(_p_q0_one(c)), f_true),
         ("phi", encode_phase(phi_true), lambda c: decode_phase(_p_q0_one(c)), phi_true),
     ]:

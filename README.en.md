@@ -147,6 +147,40 @@ python scripts/quantum_loop_sim.py
 python scripts/quantum_10shot_math.py
 ```
 
+### The real hardware measurement
+
+The quantum bridge can be run on a **real QPU**. The token belongs in the
+`IBM_QUANTUM_API_TOKEN` environment variable (the `scs_quantum` package also
+loads its own `.env` file) — **never on the command line, never in a file
+inside the repository**.
+
+```bash
+# pipeline check on an ideal simulator — no token needed,
+# but this is NOT QPU evidence, only proof that the code is correct
+python scripts/hardware_measure.py --local
+
+# the real hardware: the Bell fidelity, the 16-mode argmax, the (A, f, φ) decoding
+python scripts/hardware_measure.py --backend ibm_brisbane --shots 1024 --mode-trials 20
+```
+
+The measurement covers three things:
+1. the **bit-order self-check** — a precondition; if it fails, the measurement is rejected
+2. the **hardware fidelity** (the Bell-reference balance) → this is the `c` used in the simulation
+3. the **accuracy of the 16-mode argmax** against the classical argmax, and the **(A, f, φ) decoding** accuracy
+
+The raw measurement data lands in `measurement_raw/` (with the job ID, the
+backend and the timestamp) — it is **not version controlled**.
+
+> **Environment:** a clean virtual environment is recommended for the
+> measurement. Qiskit 1.x and 2.x cannot coexist in the same Python:
+> ```bash
+> python -m venv .venv-quantum
+> .venv-quantum/Scripts/pip install "qiskit>=2.0" "qiskit-ibm-runtime>=0.50" python-dotenv numpy
+> .venv-quantum/Scripts/python scripts/hardware_measure.py --local
+> ```
+> If the `scs_quantum` package is not installed, the `SCS_QUANTUM_PATH`
+> environment variable points at its `python/` directory.
+
 All measurements run with **deterministic seeds**, so the numbers are reproducible.
 
 ---
