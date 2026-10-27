@@ -6,41 +6,44 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   rust:
-    name: Rust crates
+    name: "Rust crates"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - name: fluid-stratos: build
+      - name: "fluid-stratos: build"
         run: cargo build --manifest-path crates/fluid-stratos/Cargo.toml
-      - name: fluid-stratos: regression tests
+      - name: "fluid-stratos: regression tests"
         run: cargo test --manifest-path crates/fluid-stratos/Cargo.toml
-      - name: quantum-bridge: build
+      - name: "quantum-bridge: build"
         run: cargo build --manifest-path crates/quantum-bridge/Cargo.toml
-      - name: quantum-bridge: tests
+      - name: "quantum-bridge: tests"
         run: cargo test --manifest-path crates/quantum-bridge/Cargo.toml
-      - name: clippy
+      - name: "clippy"
         run: |
           cargo clippy --manifest-path crates/fluid-stratos/Cargo.toml --all-targets -- -D warnings
           cargo clippy --manifest-path crates/quantum-bridge/Cargo.toml --all-targets -- -D warnings
-      - name: formatting
+      - name: "formatting"
         run: |
           cargo fmt --manifest-path crates/fluid-stratos/Cargo.toml -- --check
           cargo fmt --manifest-path crates/quantum-bridge/Cargo.toml -- --check
 
   python:
-    name: Measurement scripts
+    name: "Measurement scripts"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: install dependencies
+      - name: "install dependencies"
         run: pip install numpy
-      - name: the 10-shot mathematics
+      - name: "the 10-shot mathematics"
         run: python scripts/quantum_10shot_math.py
-      - name: the fluid awakening measurement
+      - name: "the fluid awakening measurement"
         run: python scripts/gpe_fft_measurement.py

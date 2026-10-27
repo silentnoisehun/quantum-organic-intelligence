@@ -70,8 +70,7 @@ python scripts/quantum_10shot_math.py
 ### A valós hardveres mérés
 
 A quantumhíd valódi QPU-n is futtatható. A token az `IBM_QUANTUM_API_TOKEN`
-környezetváltozóban kell (a `scs_quantum` saját `.env` fájlját is betölti) —
-**soha ne a parancssorban, soha ne fájlba írva a repóban**.
+környezetváltozóban kell (a `scs_quantum` saját `.env` fájlját is betölti).
 
 ```bash
 # A pipeline ellenőrzése ideális szimulátoron — token NEM kell,

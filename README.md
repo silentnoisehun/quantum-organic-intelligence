@@ -71,8 +71,7 @@ python scripts/quantum_10shot_math.py
 
 The bridge can be run on a real QPU. The token belongs in the
 `IBM_QUANTUM_API_TOKEN` environment variable (the `scs_quantum` package also
-loads its own `.env` file) — **never on the command line, never in a file
-inside the repository**.
+loads its own `.env` file).
 
 ```bash
 # Pipeline check on an ideal simulator — no token needed,
