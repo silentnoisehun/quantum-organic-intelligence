@@ -153,7 +153,10 @@ def run_hardware_loop(args, cli, qc, service, backend, sampler, raw_dir, tag):
 
         t0 = time.time()
         job = sampler.run([(c,) for c in isa], shots=args.shots)
-        result = job.result()
+        # 🧬 A HATÁRIDŐ KELL: ha a kontó kvótája elfogyott, a platform
+        # ELFOGADJA a jobot, de az SOOSEM fut le — a `result()` végtelenül
+        # blokkolna. A timeout ez helyett hibát dob.
+        result = job.result(timeout=args.job_timeout)
         wall = time.time() - t0
 
         qpu = 0.0
@@ -304,10 +307,21 @@ def main():
                          "az élő c-vel torzítástlanított érték")
     ap.add_argument("--no-save-state", dest="save_state", action="store_false",
                     help="ne mentsük a folyadékállapotot a nyers fájlba")
+    ap.add_argument("--token-file", default=None,
+                    help="JSON fájl az IBM kulccsal ({\"apikey\": ...}) — "
+                         "a kulcs nem kerül a parancssorba")
+    ap.add_argument("--job-timeout", type=float, default=900.0,
+                    help="a job eredményének várakozási határa mp-ben")
     ap.add_argument("--out-dir", default=None)
     args = ap.parse_args()
 
     token = os.environ.get("IBM_QUANTUM_API_TOKEN") or os.environ.get("QISKIT_IBM_TOKEN")
+    if args.token_file:
+        # 🧬 A KULCS FÁJLBÓL: a három IBM kulcs három KÜLÖN instance
+        # (külön kvótával), ezért párhuzamosan futtathatók. A kulcs soha
+        # nem kerül a parancssorba.
+        with open(args.token_file, encoding="utf-8") as fh:
+            token = json.load(fh)["apikey"]
     if not token:
         raise SystemExit("az IBM_QUANTUM_API_TOKEN környezetváltozó nincs beállítva")
 
@@ -335,6 +349,17 @@ def main():
     print("=" * 78)
 
     usage_before = service.usage()
+    # 🧬 A KVÓTA-ELLENŐRZÉS BEKÜLDÉS ELŐTT: ha elfogyott a keret, a
+    # platform fogadja a jobot, de az sosem fut le. Ezt meg kell állítani
+    # itt, nem egy beragadt `result()`-ban.
+    if usage_before.get("usage_limit_reached"):
+        raise SystemExit(
+            "A KONTÓ KVÓTÁJA ELFYOGOTT — a jobok soha nem futnának le.\n"
+            f"  instance : {usage_before.get('instance_id')}\n"
+            f"  fogyott  : {usage_before.get('usage_consumed_seconds')} mp "
+            f"(limit {usage_before.get('usage_limit_seconds')} mp)\n"
+            "  másik kulcsot vagy másik plan instance-t kell használni."
+        )
     print(f"kvóta előtte: {usage_before.get('usage_remaining_seconds')} mp "
           f"(limit {usage_before.get('usage_limit_seconds')} mp)")
 
