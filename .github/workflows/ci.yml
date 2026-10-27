@@ -47,3 +47,5 @@ jobs:
         run: python scripts/quantum_10shot_math.py
       - name: "the fluid awakening measurement"
         run: python scripts/gpe_fft_measurement.py
+      - name: "the raw measurement summary"
+        run: python scripts/summarize_hardware_run.py

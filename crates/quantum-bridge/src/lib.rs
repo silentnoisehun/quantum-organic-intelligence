@@ -234,6 +234,16 @@ fn p_of_q0_zero(counts: &Counts) -> Option<f64> {
     Some(counts.get("0x0").copied().unwrap_or(0) as f64 / total as f64)
 }
 
+/// A mért `P(q0=1)` a counts-ból — a legkisebb bit a q0.
+pub fn probability_q0_one(counts: &Counts) -> Option<f64> {
+    p_of_q0_one(counts)
+}
+
+/// A mért `P(q0=0)` a counts-ból.
+pub fn probability_q0_zero(counts: &Counts) -> Option<f64> {
+    p_of_q0_zero(counts)
+}
+
 /// SCS → kvantumáramkör kódolás.
 #[derive(Debug, Default, Clone)]
 pub struct PsiQuantumBridge {
@@ -306,14 +316,12 @@ impl PsiQuantumBridge {
 
     /// Az amplitúdó visszafejtése: `A = 2·arccos(√P(q0=0))`
     pub fn decode_amplitude(&self, counts: &Counts) -> Option<f64> {
-        let p0 = p_of_q0_zero(counts)?;
-        Some(2.0 * p0.clamp(0.0, 1.0).sqrt().acos())
+        Some(decode_amplitude_from_p(p_of_q0_zero(counts)?))
     }
 
     /// A fázis visszafejtése: `φ = 2·arcsin(√P(q0=1))`
     pub fn decode_phase(&self, counts: &Counts) -> Option<f64> {
-        let p1 = p_of_q0_one(counts)?;
-        Some(2.0 * p1.clamp(0.0, 1.0).sqrt().asin())
+        Some(decode_phase_from_p(p_of_q0_one(counts)?))
     }
 
     /// A frekvencia visszafejtése: `f = arcsin(√P(q0=1)) / π`
@@ -322,9 +330,23 @@ impl PsiQuantumBridge {
     /// A teljes tartományban a kétkvantumos interferencia nem ad egyértelmű
     /// visszafejtést (a 2π-periodicitás és a kétirányú (f, 1−f) forma miatt).
     pub fn decode_frequency(&self, counts: &Counts) -> Option<f64> {
-        let p1 = p_of_q0_one(counts)?;
-        Some(p1.clamp(0.0, 1.0).sqrt().asin() / PI)
+        Some(decode_frequency_from_p(p_of_q0_one(counts)?))
     }
+}
+
+/// Az amplitúdó visszafejtése egy valószínűségből: `A = 2·arccos(√P(q0=0))`
+pub fn decode_amplitude_from_p(p_q0_zero: f64) -> f64 {
+    2.0 * p_q0_zero.clamp(0.0, 1.0).sqrt().acos()
+}
+
+/// A fázis visszafejtése egy valószínűségből: `φ = 2·arcsin(√P(q0=1))`
+pub fn decode_phase_from_p(p_q0_one: f64) -> f64 {
+    2.0 * p_q0_one.clamp(0.0, 1.0).sqrt().asin()
+}
+
+/// A frekvencia visszafejtése egy valószínűségből: `f = arcsin(√P(q0=1)) / π`
+pub fn decode_frequency_from_p(p_q0_one: f64) -> f64 {
+    p_q0_one.clamp(0.0, 1.0).sqrt().asin() / PI
 }
 
 /// Egy hullámcsomag három külön mérési áramköre, a γ értékével együtt.
@@ -402,6 +424,24 @@ pub fn encode_mode_energies(energies: &[f64; 16]) -> Vec<(usize, f64)> {
 pub fn degrade_probability(p: f64, bell_fidelity: f64) -> f64 {
     let c = bell_fidelity.clamp(0.0, 1.0);
     c * p.clamp(0.0, 1.0) + (1.0 - c) * 0.5
+}
+
+/// A hardver-minőséggel torzított valószínűség INVERZE.
+///
+/// 🧬 MIÉTT KELL: a `degrade_probability` a hardver ZAJÁNAK modellje
+/// (`p_meas = c·p_true + (1−c)·0.5`). Valódi hardveren a mért
+/// valószínűség már tartalmazza ezt a zajt, ezért újra alkalmazni
+/// dupla torzítást okozna. A visszafejtéshez viszont a torzítást
+/// EL kell távolítani: ebből lesz a valódi érték becslése.
+///
+/// Az `c` a hurokban a Bell-anchorból származó ÉLŐ érték, így a
+/// dekódoló valós időben követi a hardver öregedését és a driftet.
+pub fn unbias_probability(p_measured: f64, bell_fidelity: f64) -> f64 {
+    let c = bell_fidelity.clamp(0.0, 1.0);
+    if c <= 0.0 {
+        return 0.5;
+    }
+    ((p_measured.clamp(0.0, 1.0) - (1.0 - c) * 0.5) / c).clamp(0.0, 1.0)
 }
 
 /// A 16 mód egyetlen kvantum-mérése a mért hardver-paraméterekkel.
@@ -697,6 +737,61 @@ mod tests {
             "a gyengébb hardver nem lehet pontosabb; strong={:.4} weak={:.4}",
             strong,
             weak
+        );
+    }
+
+    #[test]
+    fn unbias_is_the_inverse_of_degrade() {
+        for c in [1.0_f64, 0.949, 0.877, 0.5] {
+            for p in [0.0_f64, 0.25, 0.5, 0.75, 1.0] {
+                let measured = degrade_probability(p, c);
+                let recovered = unbias_probability(measured, c);
+                assert!(
+                    (recovered - p).abs() < 1e-9,
+                    "a torzítás és a visszafejtés nem egymás inverze; p={} c={} -> {}",
+                    p,
+                    c,
+                    recovered
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn unbias_neutralises_the_symmetric_noise() {
+        // A hardver zajmodellje: p_meas = c·p + (1−c)·0.5.
+        // A torzítástlanított becslés a valódi p-re áll.
+        let p_true = 0.8;
+        let c = 0.877;
+        let measured = degrade_probability(p_true, c);
+        assert!(
+            measured < p_true,
+            "a hardver a középpont felé torzít; measured={}",
+            measured
+        );
+        assert!((unbias_probability(measured, c) - p_true).abs() < 1e-9);
+    }
+
+    #[test]
+    fn unbias_clamps_into_the_unit_interval() {
+        assert!((0.0..=1.0).contains(&unbias_probability(0.0, 0.5)));
+        assert!((0.0..=1.0).contains(&unbias_probability(1.0, 0.5)));
+        // c = 0 esetén a modell degenerál: vissza a középpont.
+        assert!((unbias_probability(0.3, 0.0) - 0.5).abs() < 1e-12);
+    }
+
+    #[test]
+    fn from_p_decoders_match_the_counts_decoders() {
+        let mut c = Counts::new();
+        c.insert("0x0".to_string(), 300usize);
+        c.insert("0x1".to_string(), 700usize);
+        let bridge = PsiQuantumBridge::new();
+        assert!(
+            (bridge.decode_amplitude(&c).unwrap() - decode_amplitude_from_p(0.3)).abs() < 1e-12
+        );
+        assert!((bridge.decode_phase(&c).unwrap() - decode_phase_from_p(0.7)).abs() < 1e-12);
+        assert!(
+            (bridge.decode_frequency(&c).unwrap() - decode_frequency_from_p(0.7)).abs() < 1e-12
         );
     }
 }

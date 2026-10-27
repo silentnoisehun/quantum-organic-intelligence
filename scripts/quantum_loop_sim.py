@@ -14,7 +14,7 @@
 #               szerkezetevel. A gpe.rs FAZIS-ROTACIOJA (dead) kontrollkent.
 # HARDVER: a mert Bell-egyensuly c (0.877-0.993) -> p_eff = c*p + (1-c)*0.5
 # ==================================================================
-import numpy as np, math, json, sys
+import numpy as np, math, json, os, sys
 from math import comb, sin, sqrt, asin, acos, pi
 
 N       = 32
@@ -52,6 +52,12 @@ def genome_positions(n):
     return pos
 
 MODES = genome_positions(N)
+
+# A 16 mód neve (a hardveres hurok a nevüket is kiírja)
+MODE_NAMES = [
+    "Brain", "Logic", "Memory", "Creativity", "Heart", "Intuition", "Focus", "Empathy",
+    "Analysis", "Synthesis", "Ethics", "Play", "Dream", "Social", "Survival", "Transcendence",
+]
 
 def create_potential(n):
     pot = np.zeros((n, n))
@@ -267,76 +273,87 @@ def stats(seq, label):
     return {"hist": hist.tolist(), "H_Hmax": float(H/Hmax), "mH": mH, "active": active,
             "tail_H": float(tH/Hmax), "tail_max": float(tp.max())}
 
-print("=" * 78)
-print("A KVANTUM-KLASSZIKUS HUROK SZIMULACIOJA")
-print("=" * 78)
-print("  N=%d  ITERS=%d  GPE_STEPS=%d  SHOTS=%d  C_BELL=%.3f" % (N, ITERS, GPE_STEPS, SHOTS, C_BELL))
-print("  a GPE: valodi 2D FFT (numpy) | a hardver: c=%.3f Bell-egyensuly" % C_BELL)
-print()
 
-results = {}
-print("-" * 78)
-print("AG 1: KVANTUM-HUROK (a MATE-protokoll, 3 meres x 10 loves)")
-print("-" * 78)
-seq_q, coh_q, par_q = run_loop("quantum", live=True, seed=SEED)
-results["quantum"] = stats(seq_q, "quantum")
-results["quantum"]["coh_mean"] = float(np.mean(coh_q))
-results["quantum"]["coh_min"] = float(np.min(coh_q))
-results["quantum"]["coh_max"] = float(np.max(coh_q))
 
-print()
-print("-" * 78)
-print("AG 2: KLASSZIKUS KONTROLL (azonos GPE, kvantumzaj NELKUL)")
-print("-" * 78)
-seq_c, coh_c, par_c = run_loop("classical", live=True, seed=SEED+1)
-results["classical"] = stats(seq_c, "classical")
-results["classical"]["coh_mean"] = float(np.mean(coh_c))
+def main():
+    """A 4 ágas szimuláció futtatása (a szkript közvetlen futtatásakor)."""
+    print("=" * 78)
+    print("A KVANTUM-KLASSZIKUS HUROK SZIMULACIOJA")
+    print("=" * 78)
+    print("  N=%d  ITERS=%d  GPE_STEPS=%d  SHOTS=%d  C_BELL=%.3f" % (N, ITERS, GPE_STEPS, SHOTS, C_BELL))
+    print("  a GPE: valodi 2D FFT (numpy) | a hardver: c=%.3f Bell-egyensuly" % C_BELL)
+    print()
 
-print()
-print("-" * 78)
-print("AG 3: NULL-MODELL (uniform random 16 mod)")
-print("-" * 78)
-r = np.random.default_rng(SEED+2)
-seq_u = r.integers(0, 16, ITERS).tolist()
-results["uniform"] = stats(seq_u, "uniform")
+    results = {}
+    print("-" * 78)
+    print("AG 1: KVANTUM-HUROK (a MATE-protokoll, 3 meres x 10 loves)")
+    print("-" * 78)
+    seq_q, coh_q, par_q = run_loop("quantum", live=True, seed=SEED)
+    results["quantum"] = stats(seq_q, "quantum")
+    results["quantum"]["coh_mean"] = float(np.mean(coh_q))
+    results["quantum"]["coh_min"] = float(np.min(coh_q))
+    results["quantum"]["coh_max"] = float(np.max(coh_q))
 
-print()
-print("-" * 78)
-print("AG 4: A DEAD GPE (a gpe.rs FAZIS-ROTACIOJA, ahogy ma van)")
-print("-" * 78)
-seq_d, coh_d, par_d = run_loop("dead", live=False, seed=SEED+3)
-results["dead"] = stats(seq_d, "dead")
-results["dead"]["coh_mean"] = float(np.mean(coh_d))
+    print()
+    print("-" * 78)
+    print("AG 2: KLASSZIKUS KONTROLL (azonos GPE, kvantumzaj NELKUL)")
+    print("-" * 78)
+    seq_c, coh_c, par_c = run_loop("classical", live=True, seed=SEED+1)
+    results["classical"] = stats(seq_c, "classical")
+    results["classical"]["coh_mean"] = float(np.mean(coh_c))
 
-print()
-print("=" * 78)
-print("EREDMENY")
-print("=" * 78)
-q = results["quantum"]; c = results["classical"]; u = results["uniform"]; d = results["dead"]
-print("  marginalis H/Hmax   quantum=%.4f  classical=%.4f  uniform=%.4f  dead=%.4f" % (
-    q["H_Hmax"], c["H_Hmax"], u["H_Hmax"], d["H_Hmax"]))
-print("  atmeneti H          quantum=%.4f  classical=%.4f  uniform=%.4f  dead=%.4f" % (
-    q["mH"], c["mH"], u["mH"], d["mH"]))
-print("  aktiv atmeneti mod  quantum=%d/16   classical=%d/16   dead=%d/16" % (
-    q["active"], c["active"], d["active"]))
-print()
-print("  KOHERENCIA (C):")
-print("    quantum   mean=%.4f  min=%.4f  max=%.4f" % (q["coh_mean"], q["coh_min"], q["coh_max"]))
-print("    classical mean=%.4f" % c["coh_mean"])
-print("    dead      mean=%.4f" % d["coh_mean"])
-print()
-print("  A KUZEPS: a quantum es a classical kozott a kulonbseg?")
-print("    hisztogram kulonbseg (TV distance) = %.4f" % (
-    0.5*np.abs(np.array(q["hist"]) - np.array(c["hist"])).sum()/ITERS))
-print()
-print("  A KVANTUM PARAMETEREK (az elso 5 iteracio):")
-for i in range(5):
-    A, f, phi = par_q[i]
-    print("    iter %d: A=%.4f f=%.4f phi=%.4f  -> argmax mod = %d" % (i, A, f, phi, seq_q[i]))
+    print()
+    print("-" * 78)
+    print("AG 3: NULL-MODELL (uniform random 16 mod)")
+    print("-" * 78)
+    r = np.random.default_rng(SEED+2)
+    seq_u = r.integers(0, 16, ITERS).tolist()
+    results["uniform"] = stats(seq_u, "uniform")
 
-with open(r"C:\Users\mater\.minimax\sessions\mvs_4be75a039e3e4dd2a6a370720f28065c\workspace\quantum-loop-results.json", "w") as fh:
-    json.dump({"results": results,
-               "seq_quantum": seq_q, "seq_classical": seq_c, "seq_dead": seq_d,
-               "coh_quantum": coh_q, "coh_classical": coh_c}, fh, indent=1)
-print()
-print("  kiirva: quantum-loop-results.json")
+    print()
+    print("-" * 78)
+    print("AG 4: A DEAD GPE (a gpe.rs FAZIS-ROTACIOJA, ahogy ma van)")
+    print("-" * 78)
+    seq_d, coh_d, par_d = run_loop("dead", live=False, seed=SEED+3)
+    results["dead"] = stats(seq_d, "dead")
+    results["dead"]["coh_mean"] = float(np.mean(coh_d))
+
+    print()
+    print("=" * 78)
+    print("EREDMENY")
+    print("=" * 78)
+    q = results["quantum"]; c = results["classical"]; u = results["uniform"]; d = results["dead"]
+    print("  marginalis H/Hmax   quantum=%.4f  classical=%.4f  uniform=%.4f  dead=%.4f" % (
+        q["H_Hmax"], c["H_Hmax"], u["H_Hmax"], d["H_Hmax"]))
+    print("  atmeneti H          quantum=%.4f  classical=%.4f  uniform=%.4f  dead=%.4f" % (
+        q["mH"], c["mH"], u["mH"], d["mH"]))
+    print("  aktiv atmeneti mod  quantum=%d/16   classical=%d/16   dead=%d/16" % (
+        q["active"], c["active"], d["active"]))
+    print()
+    print("  KOHERENCIA (C):")
+    print("    quantum   mean=%.4f  min=%.4f  max=%.4f" % (q["coh_mean"], q["coh_min"], q["coh_max"]))
+    print("    classical mean=%.4f" % c["coh_mean"])
+    print("    dead      mean=%.4f" % d["coh_mean"])
+    print()
+    print("  A KUZEPS: a quantum es a classical kozott a kulonbseg?")
+    print("    hisztogram kulonbseg (TV distance) = %.4f" % (
+        0.5*np.abs(np.array(q["hist"]) - np.array(c["hist"])).sum()/ITERS))
+    print()
+    print("  A KVANTUM PARAMETEREK (az elso 5 iteracio):")
+    for i in range(5):
+        A, f, phi = par_q[i]
+        print("    iter %d: A=%.4f f=%.4f phi=%.4f  -> argmax mod = %d" % (i, A, f, phi, seq_q[i]))
+
+    out_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "quantum-loop-results.json")
+    with open(out_path, "w") as fh:
+        json.dump({"results": results,
+                   "seq_quantum": seq_q, "seq_classical": seq_c, "seq_dead": seq_d,
+                   "coh_quantum": coh_q, "coh_classical": coh_c}, fh, indent=1)
+    print()
+    print("  kiirva: quantum-loop-results.json")
+
+
+
+if __name__ == "__main__":
+    main()

@@ -89,7 +89,27 @@ The measurement covers three things:
 3. the **accuracy of the 16-mode argmax** against the classical argmax, and the **$(A, f, \varphi)$ decoding** accuracy
 
 The raw measurement data lands in `measurement_raw/` (with the job ID, the backend
-and the timestamp) — it is **not version controlled**.
+and the timestamp) — it **is version controlled**, so every number quoted in
+`docs/` can be traced back to the measurement file it came from.
+
+### The quantum–classical loop on real hardware
+
+`scripts/quantum_loop_hardware.py` runs the loop itself on a QPU. It bundles the
+three circuits of an iteration (A, f, φ) into a single job, adds a Bell anchor
+every N iterations, and feeds the measured hardware quality `c` back into the
+decoder through the Rust bridge (`crates/quantum-bridge/src/bin/bridge-cli.rs`),
+so the decoding mathematics lives in exactly one place.
+
+```bash
+# The loop: 100 iterations, 1024 shots, the anchor every 5 iterations
+python scripts/quantum_loop_hardware.py --backend ibm_fez --iterations 100 --shots 1024 --anchor-every 5
+```
+
+> **The open plan has no sessions.** IBM refuses a Runtime Session on the open
+> plan ("not authorized to run a session when using the open plan"), so each
+> iteration queues as an independent job. The script therefore *measures* the
+> queue wait instead of assuming it, and prints the QPU seconds and the wall
+> clock separately. A reserved window would need a different plan instance.
 
 > **Environment:** a clean virtual environment is recommended for the
 > measurement. Qiskit 1.x and 2.x cannot coexist in the same Python:

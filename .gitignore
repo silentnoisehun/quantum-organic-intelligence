@@ -16,10 +16,10 @@ venv/
 quantum-loop-results.json
 gpe-fft-fix-measurement.json
 
-# Raw quantum hardware measurements — deliberately NOT committed.
-# The measured numbers in docs/ are summaries of runs whose raw
-# measurement files are not part of this repository.
-measurement_raw/
+# Raw quantum hardware measurements — version controlled on purpose.
+# Every number quoted in docs/ has to be traceable to the measurement file
+# it came from, so the raw runs are part of the repository. The helper
+# formats below stay out.
 *.qasm
 *.qpy
 counts*.json

@@ -88,7 +88,28 @@ A mérés három dolgot mér:
 3. a **16 mód argmax pontosságát** a klasszikus argmaxhoz képest, és az **$(A, f, \varphi)$ dekódolás** pontosságát
 
 A nyers mérési adatok a `measurement_raw/` mappába kerülnek (a job ID-vel, a
-backenddel és az időbélyeggel) — ez **nincs verziókövetve**.
+backenddel és az időbélyeggel) — ez **verziókövetett**, így a `docs/`-ban
+idézett minden szám visszakövethető a mérési fájljához.
+
+### A kvantum–klasszikus hurok valódi hardveren
+
+A `scripts/quantum_loop_hardware.py` a hurkot futtatja egy QPU-n. Az iteráció
+három áramkörét (A, f, φ) egy jobba kötegeli, minden N. iterációban
+Bell-anchort ad hozzá, és a mért hardver-minőséget (`c`) visszaadja a
+dekódolóba a Rust bridge-en keresztül
+(`crates/quantum-bridge/src/bin/bridge-cli.rs`) — így a dekódolás
+matematikája pontosan egy helyen van.
+
+```bash
+# A hurok: 100 iteráció, 1024 lövés, az anchor minden 5. iterációban
+python scripts/quantum_loop_hardware.py --backend ibm_fez --iterations 100 --shots 1024 --anchor-every 5
+```
+
+> **Az open csomagban nincs session.** Az IBM megtagadja a Runtime Session-t az
+> open csomagon ("not authorized to run a session when using the open plan"),
+> így minden iteráció önálló jobként áll sorba. A szkript ezért a
+> sor-várakozást **méri**, nem feltételezi, és a QPU-mp-eket meg a falióra-időt
+> külön kiírja. A fenntartott ablakhoz másik plan instance kell.
 
 > **Környezet:** a méréshez tiszta virtuális környezet ajánlott. A Qiskit 1.x és
 > 2.x nem él együtt ugyanabban a Pythonban:
