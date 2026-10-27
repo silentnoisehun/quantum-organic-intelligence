@@ -44,6 +44,15 @@ The simulation protocol takes the $(A, f, \varphi)$ parameters extracted on the 
   2. The histogram test must always be compared against the classical control, to avoid false positives.
   3. The quantum bridge is suitable for measuring the wavepacket $(A, f, \varphi)$; deciding between the 16 modes via the quantum path is not detectable with the current hardware parameters.
 
+### What validates the complete claim
+
+The protocol is 1000 iterations of the loop. The complete claim is validated by
+running the measurement to the end — the full 1000 iterations together with the
+classical control, so that the histogram test has the statistical power it
+needs. The runs behind `docs/` are shorter than that, for the measured reasons
+given in section 6 of `docs/MEASUREMENTS-HARDWARE-20261027.txt`: the open
+plan's 600 s quota and the absence of Runtime Sessions.
+
 ---
 
 ## 4. Usage

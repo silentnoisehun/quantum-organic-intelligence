@@ -289,6 +289,16 @@ es a c alapjan lehet donteni, hogy egy meres megbizonykodott-e.
   + ~20 mp (a 16 modos meres) + a kalibracio. A 75 mp maradt a meres
   vegekor.
 
+  A TELJES ALLITAS VALIDALASA: a protokoll 1000 iteracio. A teljes
+  allitast A MERES VEGIGFUTASAVAL lehet validalni — a teljes, 1000
+  iteracios futassal, a klasszikus kontrollal egyutt, hogy a
+  hisztogram-teszthez elegendo statisztikai ero legyen. A mostani
+  futások (68 + 20 + 20 iteracio) ennél rovidebbek, a fenti, MERT
+  okok miatt. A 68 iteracios futas 7 kulonbozo modot latogat meg, a
+  klasszikus kontroll 20/20-ban egyetlen modon marad — ez az irany
+  egyezik a szimulacioval, de a teljes bizonyitashoz a teljes futas
+  kell.
+
 --------------------------------------------------------------------------------
 7. MIT NEM BIZONYIT A MERES
 --------------------------------------------------------------------------------

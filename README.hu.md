@@ -44,6 +44,15 @@ A szimulációs protokoll során a CPU-ról kinyert paramétereket $(A, f, \varp
   2. A hisztogram-tesztet minden esetben össze kell vetni a klasszikus kontrollal a hamis pozitív eredmények elkerülése érdekében.
   3. A kvantumhíd a hullámcsomag $(A, f, \varphi)$ mérésére alkalmas; a 16 mód közötti verseny kvantum-úton történő eldöntése a jelenlegi hardver-paraméterek mellett nem mutatható ki.
 
+### Mi validálja a teljes állítást
+
+A protokoll 1000 iteráció. A teljes állítást **a mérés végigfutásával** lehet
+validálni: a teljes, 1000 iterációs futással, a klasszikus kontrollal együtt,
+hogy a hisztogram-tesztnek legyen elegendő statisztikai ereje. A `docs/`
+mögötti futások ennél rövidebbek, a
+`docs/MEASUREMENTS-HARDWARE-20261027.txt` 6. szakaszában mért okok miatt: az
+open csomag 600 s-os kvótája és a Runtime Session hiánya.
+
 ---
 
 ## 4. Használat
