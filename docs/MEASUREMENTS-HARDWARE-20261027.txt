@@ -50,6 +50,43 @@ szkript ezt nem rejti el: megprobalja a sessiont, elkapja a hibat, es
 job-módban fut tovább — a sor-VARAKOZAST MERVE, nem feltetelezve.
 
 --------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+0b. A HÁROM KULCS — HÁROM KÜLÖN KONTÓ (mérve)
+--------------------------------------------------------------------------------
+
+A kulcsok NEM osztoznak egy kvótán: mindhárom külön instance (külön CRN),
+a plan_id viszont ugyanaz. A kvóta KONTÓNKÉNT számol.
+
+  kulcs    instance (CRN)                        kvóta maradt  fogyott
+  z89zu    .../a/80849ad63b404c24b359b0a41e60eb3f:c2953219-...   75 mp  525 mp
+  SILENT   .../a/2d96f97640b049e3ab4393a4881a8c15:4e4defd5-...    0 mp  622 mp
+  jthr     .../a/32e09e323d2741469a8bb67015fe4b5a:4bdd9fda-...    0 mp  600 mp
+
+KÖVETKEZÉS: a kulcsokkal PARHUZAMOSAN is lehet mérni (kulcs -> külön
+process, külön backend), a falióra-idő átvitel 2-3× lenne. DE most a két
+másik kontón nincs keret — a mérés ezen az egy konton (z89zu) futott.
+
+A KIMERÜLT KVÓTA CSAPDA (a legveszélyesebb, amit a mérés kitett):
+  a platform a kimerült instance-n is ELFOGADJA a jobot (visszaad job ID-t),
+  de az SOOSEM FUT LE — QUEUED-ben ragad, és a job.result() végtelenül
+  blokkol. Egy automatizált pipeline-ban ez csendes beragadás.
+  (Két ilyen beragadt jobot le kellett állítani az ibm_fez sorából.)
+
+Ezért a szkriptben:
+  - a kvóta ellenőrzés BEKÜLDÉS ELŐTT: usage_limit_reached -> azonnali
+    kilépés (a CRN-nel és a fogyással), nem egy beragadt result()-ban;
+  - job.result(timeout=...) (alap 900 mp) — ami soha nem fut le, gyorsan
+    hibát dob;
+  - --token-file: a kulcs fájlból jön, nem a parancssorból.
+
+A kvótaablak GÖRDÜLŐ 28 napos: a fogyás csak akkor csökkenne, ha 28 napos,
+RÉGI felhasználás esne ki. A gyakorlatban a kvóta nem resetel hamar.
+
+Egy apró, de fontos operatív részlet: a platform időbélyege KÉT ÓRÁVAL
+eltér a helyi gépünktől, ezért a job-ok létrehozási időbélyege nem egyezik
+a helyi logokkal. A határidőket a platform oldalán kell nézni.
+--------------------------------------------------------------------------------
 1. A HAROM RETEG — A MERT KOLTSAGUK
 --------------------------------------------------------------------------------
 
