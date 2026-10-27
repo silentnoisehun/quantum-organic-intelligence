@@ -155,8 +155,24 @@ def run_hardware_loop(args, cli, qc, service, backend, sampler, raw_dir, tag):
         job = sampler.run([(c,) for c in isa], shots=args.shots)
         # 🧬 A HATÁRIDŐ KELL: ha a kontó kvótája elfogyott, a platform
         # ELFOGADJA a jobot, de az SOOSEM fut le — a `result()` végtelenül
-        # blokkolna. A timeout ez helyett hibát dob.
-        result = job.result(timeout=args.job_timeout)
+        # blokkolna. A timeout ez helyett hibát dob. A zsúfolt sorban is
+        # ez a védelem: a job nem indult el a határidőn belül.
+        try:
+            result = job.result(timeout=args.job_timeout)
+        except Exception as exc:
+            if type(exc).__name__ != "RuntimeJobTimeoutError":
+                raise
+            try:
+                job.cancel()
+            except Exception:
+                pass
+            raise SystemExit(
+                f"\nA JOB NEM INDULT EL {args.job_timeout:.0f} MPEN BELÜL "
+                f"(job {job.job_id()}).\n"
+                f"  a backend: {getattr(backend, 'name', '?')} — a sor túl zsúfolt.\n"
+                f"  a kvótából nem fogyott semmi (a várakozás nem számít bele).\n"
+                "  a szabad backend vagy a sessionos (dedicated) csomag ezt megoldja."
+            )
         wall = time.time() - t0
 
         qpu = 0.0
