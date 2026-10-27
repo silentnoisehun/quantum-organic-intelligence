@@ -30,7 +30,7 @@ The encoding is based on measurements on a real $156$-qubit superconducting QPU:
 
 ---
 
-## 2. The Quantumâ€“Classical Loop Simulation
+## 2. The Quantum–Classical Loop Simulation
 
 The simulation protocol takes the $(A, f, \varphi)$ parameters extracted on the CPU, submits them to the 3 quantum circuits (10 shots per measurement), decodes them, and loads the mutated values back into the fluid for 50 GPE steps.
 
@@ -47,7 +47,7 @@ The simulation protocol takes the $(A, f, \varphi)$ parameters extracted on the 
 ### What validates the complete claim
 
 The protocol is 1000 iterations of the loop. The complete claim is validated by
-running the measurement to the end â€” the full 1000 iterations together with the
+running the measurement to the end — the full 1000 iterations together with the
 classical control, so that the histogram test has the statistical power it
 needs. The runs behind `docs/` are shorter than that, for the measured reasons
 given in section 6 of `docs/MEASUREMENTS-HARDWARE-20261027.txt`: the open
@@ -69,7 +69,7 @@ cargo test --manifest-path crates/quantum-bridge/Cargo.toml
 # Measuring the fluid's awakening (numpy, ~1 min)
 python scripts/gpe_fft_measurement.py
 
-# The quantumâ€“classical loop with 4 branches (numpy, ~15 min)
+# The quantum–classical loop with 4 branches (numpy, ~15 min)
 python scripts/quantum_loop_sim.py
 
 # Checking the mathematics of 10 shots
@@ -83,28 +83,28 @@ The bridge can be run on a real QPU. The token belongs in the
 loads its own `.env` file).
 
 ```bash
-# Pipeline check on an ideal simulator â€” no token needed,
+# Pipeline check on an ideal simulator — no token needed,
 # but this is NOT QPU evidence, only proof that the code is correct
 python scripts/hardware_measure.py --local
 
-# The real hardware: the Bell fidelity, the 16-mode argmax, the (A, f, Ď†) decoding
+# The real hardware: the Bell fidelity, the 16-mode argmax, the (A, f, φ) decoding
 python scripts/hardware_measure.py --backend ibm_brisbane --shots 1024 --mode-trials 20
 ```
 
 The measurement covers three things:
 
-1. the **bit-order self-check** â€” a precondition; if it fails, the measurement is rejected
-2. the **hardware fidelity** (the Bell-reference balance) â€” this is the `c` the simulation uses
+1. the **bit-order self-check** — a precondition; if it fails, the measurement is rejected
+2. the **hardware fidelity** (the Bell-reference balance) — this is the `c` the simulation uses
 3. the **accuracy of the 16-mode argmax** against the classical argmax, and the **$(A, f, \varphi)$ decoding** accuracy
 
 The raw measurement data lands in `measurement_raw/` (with the job ID, the backend
-and the timestamp) â€” it **is version controlled**, so every number quoted in
+and the timestamp) — it **is version controlled**, so every number quoted in
 `docs/` can be traced back to the measurement file it came from.
 
-### The quantumâ€“classical loop on real hardware
+### The quantum–classical loop on real hardware
 
 `scripts/quantum_loop_hardware.py` runs the loop itself on a QPU. It bundles the
-three circuits of an iteration (A, f, Ď†) into a single job, adds a Bell anchor
+three circuits of an iteration (A, f, φ) into a single job, adds a Bell anchor
 every N iterations, and feeds the measured hardware quality `c` back into the
 decoder through the Rust bridge (`crates/quantum-bridge/src/bin/bridge-cli.rs`),
 so the decoding mathematics lives in exactly one place.
@@ -120,7 +120,7 @@ python scripts/quantum_loop_hardware.py --backend ibm_fez --iterations 100 --sho
 > queue wait instead of assuming it, and prints the QPU seconds and the wall
 > clock separately. A reserved window would need a different plan instance.
 
-> **The measurement report for the hardware run** â€”
+> **The measurement report for the hardware run** —
 > `docs/MEASUREMENTS-HARDWARE-20261027.txt`, with the run logs in
 > `docs/RUNLOG-*.txt`. Every number in it is recomputable from the raw files
 > in `measurement_raw/` with `scripts/summarize_hardware_run.py`.
@@ -137,7 +137,26 @@ python scripts/quantum_loop_hardware.py --backend ibm_fez --iterations 100 --sho
 
 ---
 
+## Open Research / Nyílt Kutatás
+
+This work is open to collaboration, peer review, and independent verification.
+If you are working in any of the following areas, I would welcome a conversation:
+
+* **Quantum error mitigation** — the asymmetric readout noise and the `c`-indicator approach
+* **Neuromorphic memory models** — the reconsolidation dynamics and the 16-mode fluid attractor
+* **Agentic AI architectures** — the cognitive gradient design and the quantum-classical feedback loop
+* **Cross-validation** — especially on the biological plausibility of the reconsolidation model
+* **Speaking engagements** — on post-academic science and the factory-to-researcher journey
+
+### Contact
+
+**ORCID:** 0009-0003-3986-6039  
+**Email:** materobi86@gmail.com  
+**Sponsor:** github.com/sponsors/silentnoisehun  
+**GitHub:** github.com/silentnoisehun/quantum-organic-intelligence
+
+---
+
 ## 5. License
 
 MIT license. The citation metadata is in `CITATION.cff`.
-
