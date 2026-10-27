@@ -1,0 +1,67 @@
+========================================================================
+QUANTUM ORGANIC INTELLIGENCE — hardveres mérés
+========================================================================
+Connecting to IBM Quantum Platform...
+python.exe : qiskit_runtime_service._discover_account:WARNING:2026-10-27 02:03:12,957: Loading account with the given t
+oken. A saved account will not be used.
+At line:10 char:1
++ & $py -u "$r\scripts\hardware_measure.py" --backend ibm_fez --shots 1 ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (qiskit_runtime_...ll not be used.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+qiskit_runtime_service.__init__:WARNING:2026-10-27 02:03:18,435: Instance was not set at service instantiation. Free an
+d trial plan instances will be prioritized. Based on the following filters: (tags: None, region: us-east, eu-de), and a
+vailable plans: (open), the available account instances are: open-instance. If you need a specific instance set it expl
+icitly either by using a saved account with a saved default instance or passing it in directly to QiskitRuntimeService(
+). Alternatively, pass instance='auto' or save it to your account for auto-selection without warning.
+OK authenticated
+qiskit_runtime_service.backends:WARNING:2026-10-27 02:03:18,435: Loading instance: open-instance, plan: open
+qiskit_runtime_service.backends:WARNING:2026-10-27 02:03:22,666: Using instance: open-instance, plan: open
+Backend: ibm_fez
+backend: ibm_fez
+
+[1/3] bit-sorrend-ellenőrzés
+bit-sorrend önellenőrzés: X q[1] -> 0x2 (várt 0x2) ✓
+  OK
+
+[2/3] a hardver-minőség (Bell-referencia)
+C:\Users\mater\.minimax\sessions\mvs_4be75a039e3e4dd2a6a370720f28065c\workspace\qoi-repo\scripts\hardware_measure.py:21
+9: DeprecationWarning: The SamplerV2 class is deprecated as of qiskit-ibm-runtime 0.50.0 and will be removed no sooner 
+than 3 months after the release date. `qiskit_ibm_runtime.executor_sampler.Sampler` provides a new Sampler implementati
+on that runs all the pre- and post-processing in the client side. The top-level `qiskit_ibm_runtime.Sampler` import wil
+l be updated to point to the client-side sampler in an upcoming release, with the legacy Sampler being available until 
+the deprecation is completed.
+  job = SamplerV2(mode=runner.backend).run([(tq,)], shots=shots)
+  nyers adat: measurement_raw\bell_1024s_dbg1919j4t8s73abc97g_20261027T010339Z.json
+  egyensúly (P(00)+P(11)) = 93.95%
+  → a szimulációban használandó c = 0.9395
+
+[3/3] a kvantumhíd mérése
+  nyers adat: measurement_raw\wave_A_1024s_dbg1951j4t8s73abc9h0_20261027T010349Z.json
+  A: beküldött 1.0000 → vissza 1.0449 (hiba +0.0449)
+  nyers adat: measurement_raw\wave_f_1024s_dbg197giudkc73e3g53g_20261027T010357Z.json
+  f: beküldött 0.2500 → vissza 0.2388 (hiba -0.0112)
+  nyers adat: measurement_raw\wave_phi_1024s_dbg199giudkc73e3g5a0_20261027T010407Z.json
+  phi: beküldött 1.0000 → vissza 0.9758 (hiba -0.0242)
+
+  a 16 mód argmax — 6 futás, 1024 lövés
+  nyers adat: measurement_raw\modes_1024s_dbg19cdjm0ks73efl050_20261027T010420Z.json
+  futás 1/6: nyertes #3 (Creativity), klasszikus #0 (Brain)
+  futás 2/6: nyertes #3 (Creativity), klasszikus #0 (Brain)
+  futás 3/6: nyertes #1 (Logic), klasszikus #0 (Brain)
+  futás 4/6: nyertes #3 (Creativity), klasszikus #0 (Brain)
+  futás 5/6: nyertes #3 (Creativity), klasszikus #0 (Brain)
+  futás 6/6: nyertes #1 (Logic), klasszikus #0 (Brain)
+  pontosság (a klasszikus #0 nyert 0.0%-ban): 0.00%
+  a nyertesek megoszlása:
+    #03 Creativity       4x
+    #01 Logic            2x
+
+  A DÖNTÉS:
+   A kvantum-út a mért hardverrel NEM nyert a klasszikus argmax ellen.
+   Ennek oka a mért energiák 1,85%-os különbsége (0,137σ @1024 lövés).
+
+========================================================================
+ÖSSZEFOGLALÓ: fidelity=0.9395, A-hiba=+0.0449, f-hiba=-0.0112, phi-hiba=-0.0242
+========================================================================

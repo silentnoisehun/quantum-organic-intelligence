@@ -1,0 +1,16 @@
+{
+ "label": "bell",
+ "job_id": "local_statevector",
+ "backend": "statevector (ide\u00e1lis, helyi)",
+ "shots": 256,
+ "timestamp_utc": "2026-10-27T00:01:25Z",
+ "counts_raw": {
+  "11": 126,
+  "00": 130
+ },
+ "fidelity": 1.0,
+ "counts_normalized": {
+  "11": 126,
+  "00": 130
+ }
+}

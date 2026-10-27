@@ -58,6 +58,26 @@ def mean(values):
     return sum(values) / len(values) if values else 0.0
 
 
+def ideal_decode(encoded):
+    """Az IDEÁLIS visszafejtett érték a kódolt értékből.
+
+    🧬 Ugyanaz a képlet, mint a Rust `bridge-cli ideal-wave` parancsa
+    (crates/quantum-bridge/src/bin/bridge-cli.rs). Az `A` és a `φ`
+    visszafejtése involúciós a [0, π] tartományon, ezért a bázis a kódolt
+    érték; az `f` csatorna modul 1 szerint összefügg, ezért abból az
+    asin(|sin(π·f)|)/π főérték adódik.
+    """
+    import math
+    a = float(encoded["A"])
+    f = float(encoded["f"])
+    phi = float(encoded["phi"])
+    return {
+        "A": a,
+        "f": math.asin(abs(math.sin(math.pi * f))) / math.pi,
+        "phi": phi,
+    }
+
+
 def report(tag, rows):
     print()
     print("=" * 78)
@@ -88,14 +108,21 @@ def report(tag, rows):
         for mode, name in (("decoded_raw", "nyers      "),
                            ("decoded_corrected", "torzítástlan")):
             errs = []
+            biased = 0
             for r in rows:
                 ideal = r.get("ideal")
+                if ideal is None and r.get("encoded"):
+                    ideal = ideal_decode(r["encoded"])
+                    biased += 1
                 if not ideal or mode not in r:
                     continue
-                errs.append(abs(float(r[mode][key]) - float(ideal[key])))
+                errs.append(float(r[mode][key]) - float(ideal[key]))
             if errs:
-                print(f"    {label} {name}: átlag {mean(errs):.5f}  max {max(errs):.5f}  "
-                      f"n={len(errs)}")
+                abs_errs = [abs(e) for e in errs]
+                signed = sum(errs) / len(errs)
+                print(f"    {label} {name}: |hiba| átlag {mean(abs_errs):.5f}  "
+                      f"max {max(abs_errs):.5f}  átlagos előjel {signed:+.5f}  n={len(errs)}"
+                      + (f"  (a bázis {biased} esetben visszaszámítva)" if biased else ""))
 
     modes = [int(r["mode_argmax"]) for r in rows if "mode_argmax" in r]
     if modes:

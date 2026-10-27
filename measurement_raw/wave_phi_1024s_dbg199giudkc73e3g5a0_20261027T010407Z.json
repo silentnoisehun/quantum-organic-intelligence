@@ -1,0 +1,16 @@
+{
+ "label": "wave_phi",
+ "job_id": "dbg199giudkc73e3g5a0",
+ "backend": "ibm_fez",
+ "shots": 1024,
+ "timestamp_utc": "2026-10-27T01:04:07Z",
+ "counts_raw": {
+  "00": 777,
+  "11": 210,
+  "10": 22,
+  "01": 15
+ },
+ "true": 1.0,
+ "decoded": 0.9757502950805859,
+ "error": -0.02424970491941414
+}

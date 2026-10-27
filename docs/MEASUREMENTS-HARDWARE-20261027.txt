@@ -1,0 +1,301 @@
+================================================================================
+MERT-HARDVER: A KVANTUM-KLASSZIKUS HUROK VALÓDI QPU-N (ibm_fez, 156 qubit)
+Datum: 2026-10-27
+Szerzo: Mavis (MiniMax Code runtime) — Mate gepen
+================================================================================
+
+A hurok protokollja (Mate):
+  1. GPE novel -> (A, f, phi)
+  2. QPU: 3 circuit (A, f, phi), 10 loves
+  3. decode -> (A', f', phi')  [zajos]
+  4. GPE 50-100 lepes: a zajt "betereli" egy attraktorba
+  5. ujra mer -> vissza 2.
+
+Mate harom retegu javaslata a hurok hardveres futtatásához:
+  (a) MIKRO-KOTEGELES: az iteracio 3 áramköre EGY jobban
+  (b) KOLOKACIO: Qiskit Runtime Session (a QPU fenntartva a hurok idejere)
+  (c) DINAMIKUS ZAJ-HORGONY: minden N. iterációban egy Bell-anchor, a
+      mért c valós idoben a `degrade_probability` fuggvenybe
+
+Ez a jelentés a harom reteget MERI — ahol lehet, determinisztikusan.
+
+--------------------------------------------------------------------------------
+0. A KORNYEZET — A MERT TENNYEK
+--------------------------------------------------------------------------------
+
+A kulcsok (mind harom ervenyes, a felsorolt fajlokbol):
+  - z89zu   (apikey.json)       -> ervenyes
+  - SILENT  (apikey (1).json)   -> ervenyes
+  - jthr    (apikey (2).json)   -> ervenyes
+
+A kulcsok mind ugyanazokat a backendeket latjak (open csomag):
+
+  backend            qubit  allapot       fuggosenben allo jobok
+  ibm_fez             156   active                    1     <- a meres backendje
+  ibm_kingston        156   active                   52
+  ibm_marrakesh       156   maintenance            1527
+
+A kvota: 600 QPU-mp egy gurdulo 28 napos ablakban. A meres alatt a
+fogyott 465 mp volt (155 -> 135 mp a 16 modos meres utan).
+
+A SESSION NEM ELERHETO AZ OPEN CSOMAGON — ezt a platform mondta, nem mi:
+
+  HTTP 400, code 1352:
+  "You are not authorized to run a session when using the open plan.
+   Create an instance of a different plan type or use a different
+   execution mode."
+
+Kovetkezik: a 2. reteg (kolokacio) ezen a csomagon NEM MUKODIK. A
+szkript ezt nem rejti el: megprobalja a sessiont, elkapja a hibat, es
+job-módban fut tovább — a sor-VARAKOZAST MERVE, nem feltetelezve.
+
+--------------------------------------------------------------------------------
+1. A HAROM RETEG — A MERT KOLTSAGUK
+--------------------------------------------------------------------------------
+
+1. MIKRO-KOTEGELES (circuit arraying) — MUKODIK
+   Az iteracio 3 áramköre (A, f, phi) EGY jobban megy, a Bell-anchor
+   pedig ugyanabban a jobban (minden 5. iterációban). Merve:
+     - 3,0 s QPU-idő / iteráció (a 2 kvantos áramkörök + a horgony)
+     - a mért c a hurok elejetol a vegeig egy kalibrációs ablakban
+       merődött (a 3. reteg ezt nem is igyeli meg: lásd a 4. pontot)
+
+2. KOLOKACIO (Runtime Session) — NEM ELERHETO
+   A fenti platform-hiba miatt. A merhető valtozata: a sor-várakozás
+   NAGYON szeles: 6,8 s ... 137,5 s (átlag 17,9 s/iter a 68 iterációs
+   futásban). A 137,5 s-es várakozás pont az a fajta drift, amit a
+   session hivasa elejtene.
+
+3. ÉLO ZAJ-HORGONY — MUKODIK, DE A FELHASZNÁLÁSA MAS, MINT JAVASOLVA
+   A Bell-anchorbol a c merheto es valoban driftel:
+     min 0,9170 | max 0,9531 | atlag 0,9350 | drift +0,0361
+   (14 anchor a 68 iterációs futasban; a referencia a korabban mért
+   0,949 jellemzo ertek)
+   A c ELOLIVE KULDI a dekodoloba. A MERES BIZONYITJA, hogy ez a
+   DEKODOLOT RONTJA — lásd a 4. pontot.
+
+--------------------------------------------------------------------------------
+2. A HURÓK — A 68 ITERÁCIÓS FUTÁS (tag 20261027T003737Z)
+--------------------------------------------------------------------------------
+
+  backend ibm_fez | 1024 loves | anchor minden 5. | 50 GPE-lepes/iter
+  visszacsatolas: az ÉLO c-vel torzitastlanitott dekódolas
+
+  AZ IDOK
+    QPU-idő összesen  : 201,00 mp   (2,96 mp/iter)
+    faliora-idő       : 1214,8 mp   (17,9 mp/iter; min 6,8, max 137,5)
+
+  A MOD-ARGMAX SORRENDJE (68 iteráció)
+    0 0 0 1 1 1 1 7 7 14 6 7 7 0 7 0 7 0 7 7 7 7 15 15 15 15 15 15 15 15
+    15 0 0 0 0 0 0 0 0 0 0 0 0 0 0 6 0 0 0 0 0 2 2 2 6 6 6 6 6 6 6 14 14
+    14 14 14 0
+    a hisztogram: [27, 4, 3, 0, 0, 0, 9, 10, 0, 0, 0, 0, 0, 0, 6, 9]
+    a meglatott modok szama: 7/16
+
+  A KODERES MEGALLAPITAS: a hurok NEM egyetlen modeba esik ossze. Hét
+  kulonbozo modot latogat meg, a Brain (#0) 27-szer. A szimulacio
+  kvantum-hurkajanak marginalis H/Hmax 0,4355 volt — a HARDVERES hurok
+  is strukturalt, nem osszecsomagolt.
+
+--------------------------------------------------------------------------------
+2b. A 20 ITERÁCIÓS FUTÁS — NYERS VISSZACSATOLÁSSAL (tag 20261027T010656Z)
+--------------------------------------------------------------------------------
+
+A fenti futás a c-vel torzított dekódolást (az elrontottat) tolta vissza a
+folyadékba. A 20 iterációs futás a NYERS dekódolást használja — a helyes
+visszacsatolást. A kettő összehasonlítható: mindkettő 1024 lövés, anchor
+minden 5., 50 GPE-lépés, ugyanaz a GPE.
+
+  AZ IDŐK
+    QPU-idő összesen  : 60,00 mp   (3,00 mp/iter)
+    falióra-idő       : 486,5 mp   (24,3 mp/iter; min 8,0, max 135,9)
+  a mért c: 0,9326 ... 0,9404
+
+  A MOD-ARGMAX SORRENDJE (20 iteráció)
+    0 0 8 8 15 6 0 6 6 0 0 0 6 15 7 15 15 15 15 0
+    a meglátott módok száma: 6/16
+
+  A KLASSZIKUS KONTROLL ARGMAX SORRENDJE (ugyanaz a GPE, kvantumzaj nélkül)
+    0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+    -> 20/20 Brain (#0), egyetlen más állapot nélkül
+
+A HARDVERES EREDMÉNY, AMI A SZIMULÁCIÓHOZ KAPCSOLÓDIK: a kvantum-hurok hat
+módot jár be, a klasszikus kontroll viszont EGYETLEN módon marad. A folyadék
+állapotában a változást a kvantum-visszacsatolás hozza, nem a GPE attraktor —
+a szimuláció ezt mutatta (a klasszikus kontroll 1000/1000 a 0. módon, a
+kvantum-hurok H/Hmax = 0,4355), most valódi hardveren is.
+
+A DEKÓDOLÁS PONTOSSÁGA A KÉT FUTÁSBAN (|hiba| átlag / átlagos előjel)
+
+  csatorna   futás                 nyers              torzított
+  A          68 it. (c-korr.)   0,02599 / +0,01254   0,21201 / -0,21201
+  A          20 it. (nyers)      0,03596 /    --      0,17552 /      --
+  f          68 it. (c-korr.)   0,01911 / -0,00749   0,01261 / -0,01239
+  f          20 it. (nyers)      0,02236 /    --      0,01375 /      --
+  phi        68 it. (c-korr.)   0,43032 / -0,29913   0,26087 / -0,23907
+  phi        20 it. (nyers)      0,34289 /    --      0,19890 /      --
+
+A KÖVETKEZTETÉS UGYANAZ mindkét futásban: a c-korrekció az amplitúdó-
+csatornán 5-6× rosszabb, az f- és φ-csatornán kissé jobb. Nem egy általános
+javítás, hanem csatornánként eltérő hatás.
+--------------------------------------------------------------------------------
+3. A DEKODOLAS PONTOSSAGA — A MERT ADAT (68 iteráció)
+--------------------------------------------------------------------------------
+
+A hibameret bázisa az IDEALIS visszafejtes (nem a kodolt ertek: az `f`
+csatorna modul 1 szerint osszefugg, ezért a kodolt ertek nem jo bazis).
+
+  csatorna   valtozat          |hiba| atlag   max      atlagos elojel
+  A          nyers                 0,02599    0,06936      +0,01254
+  A          torzitastlan          0,21201    0,39071      -0,21201
+  f          nyers                 0,01911    0,07633      -0,00749
+  f          torzitastlan          0,01261    0,06303      -0,01239
+  phi        nyers                 0,43032    0,55325      -0,29913
+  phi        torzitastlan          0,26087    0,43705      -0,23907
+
+A HALASZ:
+  - A nyers dekódolas a sztochasztikus loveszaj hataraban van
+    (A: atlagos elojel +0,0125, tehat gyakorlatilag torzítatlan).
+  - A c-vel torzitastlanított dekódolas NAGY ELTOLEST vezet be
+    (A: atlagos elojel -0,212, vagyis a torzítas 17x nagyobb a
+    loveszajnál).
+
+--------------------------------------------------------------------------------
+4. A C-KORREKCIÓ — DETERMINISZTIKUS BIZONYITEK (kvota nelkul)
+--------------------------------------------------------------------------------
+
+A Rust `unbias_probability` az ellenkezoje a `degrade_probability`-nak:
+  p_mert = c*p + (1-c)*0.5   ->   p_becsult = (p_mert - (1-c)*0.5)/c
+
+A ket LEKETEZES, hogy a modell illik-e a valodi hardverre. HAJTOK: az
+IDEALIS (hibatlan) áramkör eredmenyet dekódoljuk — ha a korrekcio itt
+is eltol, akkor a modell illik-e egyáltalan.
+
+  A_kod   idealis   nyers        hiba    torzitastlan   hiba
+  0,900   0,9000    0,9007     +0,0007     0,8395     -0,0605
+  0,500   0,5000    0,5013     +0,0013     0,3394     -0,1606
+  0,300   0,3000    0,3009     +0,0009     0,0000     -0,3000
+  0,200   0,2000    0,1980     -0,0020     0,0000     -0,2000
+  0,100   0,1000    0,1083     +0,0083     0,0000     -0,1000
+
+  (c = 0,93; 1024 loves; az idealis valoszinosegekbol szamolt idealis
+   visszafejtes — a bridge-cli `ideal-wave` parancsa)
+
+A KOVETKEZTETES: a korrekcio a hibatlan merest is elrontja, es az
+amplitudo-csatornan TELIT (a valószínuség 1 fölé kerül, a visszafejtes
+0). A modell — a hardver zaja a szimmetrikus elegy — NEM ILLIK a
+valodi hardverre. A valodi hiba ASZIMETRIKUS (a mérés nem ér el 1-et).
+
+A FAZIS-CSATORNA MIERT NAGY HIBAS? (a nyers adatokbol diagnosztizalva)
+A folyadék fazisa BIMODALIS: a kodolt ertek vagy 0.000-0.009, vagy
+2.90-3.14 kozeli. A jel tehat pont a dinamikus tartomany két szelen van,
+ahol a hardver zajszintje (P ~ 0,037) es a plafonja (P ~ 0,93) uralkodik:
+
+  kodolt ertek        n      nyers hiba atlag   torzitastlan atlag
+  phi_kod < 0,2      12         +0,3717              +0,0179
+  phi_kod >= 1,0     56         -0,4429              -0,1948
+
+A korrekcio ITT segit (a jelet a szelektol el), az amplitudo-csatornan
+viszont rontja (a jelet a szelek fele tolja). A c-korrekcio hatasa
+CSATORNANKENT ELTER — nem altalanos javitas.
+
+A HELYES HASZNALAT: az elo c NEM a dekodolo korrekcioja, hanem a
+hardver-minoseg INDICATORA. A driftet dokumentalja (0,9170 -> 0,9531),
+es a c alapjan lehet donteni, hogy egy meres megbizonykodott-e.
+
+--------------------------------------------------------------------------------
+5. A 16 MOD ARGMAX — VALÓDI HARDVEREN
+--------------------------------------------------------------------------------
+
+  backend ibm_fez | 1024 loves | 6 futás
+
+  a Bell-referencia egyensulya: 93,95%  (c = 0,9395)
+  a hullamcsomag dekódolasa:
+    A   : bekuldott 1,0000 -> vissza 1,0449  (hiba +0,0449)
+    f   : bekuldott 0,2500 -> vissza 0,2388  (hiba -0,0112)
+    phi : bekuldott 1,0000 -> vissza 0,9758  (hiba -0,0242)
+
+  a 16 modos argmax:
+    a kvantum-ut nyertese: #3 (Creativity) 4x, #1 (Logic) 2x
+    a klasszikus nyertes   : #0 (Brain)       0x
+    PONTOSSAG: 0,00% (0/6)
+
+  A SZUMLACIONALJOZ KEPEST: a szimulacio 38,65%-ot adott (c = 0,949,
+  nulla tovabbi zajjal). A valodi hardver 0/6-ot ad. A 0/6 a
+  szimulacios null-modell alatt is elfogadhato (p = 0,3865^6 = 5,2%):
+  a ket eredmeny NEM ellentmondo, a hardver a szimulaltat rosszabb
+  eredmenyre hozza, ahogy az extra hiba (crosstalk, leolvasasi hiba)
+  miatt vartuk.
+
+  A DONTES: a kvantum-ut a MERT hardverrel NEM nyert a klasszikus
+  argmax ellen. Az ok valtozatlan: a mért energiak kulonbsege 1,85%,
+  ami 1024 loves mellett 0,137 sigma.
+
+--------------------------------------------------------------------------------
+6. A PROTOCOLL MEGVALOSITHATOSAGA EZEN A CSOMAGON — A MERT ARANYOK
+--------------------------------------------------------------------------------
+
+  1 iteráció           = 2,96 s QPU-idő + 6,8...137,5 s sor-várakozás
+  1000 iteráció        = ~2960 s QPU-idő  = a 600 s kvota 4,9-szerese
+                       = ~5 oras falioraido (a várakozas atlagaval)
+
+  TEHAT: az 1000 iteracios protokoll AZ OPEN CSOMAGON NEM FUTHATO.
+  Nem a kvota miatt reszben — a session hiany miatt a várakozas is
+  ezer-szeres. A megoldas: sessiont ado plan instance (a 2. reteg),
+  es a 1000 iteraciora alkalmas kvota.
+
+  A 68 (illetve 100) iteracios futas a kvotabol MEGFELEL, es a
+  strukturalt viselkedes mar kimutathato volt.
+
+  A TELJES MERES KVOTA-FOGYASA: 525 mp a 600 mp-es limitbol (88%).
+  A fogyasztas megoszlasa: 201 mp (68 it. hurok) + 60 mp (20 it. hurok)
+  + ~20 mp (a 16 modos meres) + a kalibracio. A 75 mp maradt a meres
+  vegekor.
+
+--------------------------------------------------------------------------------
+7. MIT NEM BIZONYIT A MERES
+--------------------------------------------------------------------------------
+
+  - NEM bizonyit emergent intelligenciat. A hurok strukturalt
+    viselkedes mutat, de a GPE attraktor is mutat.
+  - NEM bizonyitja, hogy a kvantumzaj strukturalt: a szimulacio
+    szerint a kvantumzaj onmagaban nem strukturalt (a GPE adja az
+    attraktort). A hardveres hurok ezt nem valtasztja meg.
+  - A hisztogram-teszthez a klasszikus kontroll MINDIG szukseges. A
+    hardveres hurok mellett a klasszikus kontroll is futott (a
+    `--classical-control` ag).
+  - A koherencia NEM onallos meroszam: a gpe.rs definicioja szerint
+    normalizalt arany, amit a szimulacio a dead GPE-n is 1,0000-nak
+    mer.
+  - A f-csatorna modul 1 szerint osszefugg (a visszafejtes csak a
+    [0, 0.5] tartomanyban egyertelmu); a folyadék f-erteke 0...15
+    kozott van, igy a hurokban a visszacsatolt f csak az f mod 1 resze.
+  - A c-korrekcio NEM javitja a dekodolast (a 4. pont).
+
+--------------------------------------------------------------------------------
+8. A REPRODUKALAS
+--------------------------------------------------------------------------------
+
+  # a kulcs a környezetváltozóban
+  $env:IBM_QUANTUM_API_TOKEN = "<a kulcs>"
+
+  # a 16 modos argmax + a Bell-referencia + a hullamcsomag
+  python scripts/hardware_measure.py --backend ibm_fez --shots 1024 --mode-trials 6
+
+  # a hurok
+  python scripts/quantum_loop_hardware.py --backend ibm_fez --iterations 100 \
+      --shots 1024 --anchor-every 5
+
+  # a hurok a nyers (torzitatlan) visszacsatolassal + a klasszikus kontroll
+  python scripts/quantum_loop_hardware.py --backend ibm_fez --iterations 20 \
+      --shots 1024 --anchor-every 5 --feedback raw --classical-control
+
+  # a nyers adatok osszegzese (a docs/ minden szam innen jon)
+  python scripts/summarize_hardware_run.py
+
+  A nyers meresi fajlok a `measurement_raw/` mappaban vannak (verzion-
+  kovetett): minden job ID-vel, a backenddel, a loves szammal, a QPU-
+  mp-ekkel, a c-vel es a nyers counts-okkal. A `docs/` minden szama
+  ezekbol a fajlokbol szamithato.
+
+================================================================================

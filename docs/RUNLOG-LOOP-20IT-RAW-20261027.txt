@@ -1,0 +1,72 @@
+bridge-cli: E:\mm-target-qoi\debug\bridge-cli.exe
+python.exe : qiskit_runtime_service._discover_account:WARNING:2026-10-27 02:06:50,192: Loading account with the given t
+oken. A saved account will not be used.
+At line:9 char:1
++ & $py -u "$r\scripts\quantum_loop_hardware.py" --backend ibm_fez --it ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (qiskit_runtime_...ll not be used.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+qiskit_runtime_service.__init__:WARNING:2026-10-27 02:06:55,023: Instance was not set at service instantiation. Free an
+d trial plan instances will be prioritized. Based on the following filters: (tags: None, region: us-east, eu-de), and a
+vailable plans: (open), the available account instances are: open-instance. If you need a specific instance set it expl
+icitly either by using a saved account with a saved default instance or passing it in directly to QiskitRuntimeService(
+). Alternatively, pass instance='auto' or save it to your account for auto-selection without warning.
+qiskit_runtime_service.backends:WARNING:2026-10-27 02:06:55,024: Using instance: open-instance, plan: open
+backend: ibm_fez (156 qubit)
+
+==============================================================================
+A KVANTUM-KLASSZIKUS HUROK VALÓDI HARDVEREN — ibm_fez
+  iteráció=20 lövés=1024 anchor-minden=5 GPE-lépés=50 session=True
+==============================================================================
+kvóta előtte: 135 mp (limit 600 mp)
+! a session nem elérhető ezen a csomagon: RequestsApiError
+  → job mód: minden iteráció külön sorba áll. A várakozást mérjük.
+C:\Users\mater\.minimax\sessions\mvs_4be75a039e3e4dd2a6a370720f28065c\workspace\qoi-repo\scripts\quantum_loop_hardware.
+py:356: DeprecationWarning: The SamplerV2 class is deprecated as of qiskit-ibm-runtime 0.50.0 and will be removed no so
+oner than 3 months after the release date. `qiskit_ibm_runtime.executor_sampler.Sampler` provides a new Sampler impleme
+ntation that runs all the pre- and post-processing in the client side. The top-level `qiskit_ibm_runtime.Sampler` impor
+t will be updated to point to the client-side sampler in an upcoming release, with the legacy Sampler being available u
+ntil the deprecation is completed.
+  sampler = SamplerV2(mode=session_ctx if session_ctx is not None else backend)
+  iter 1/20 | anchor=True c=0.9355 | qpu=3.00s várakozás=15.5s | dA=-0.1196 df=-0.0125 dphi=-0.0086 | mód #0
+  iter 2/20 | anchor=False c=0.9355 | qpu=3.00s várakozás=11.0s | dA=-0.1053 df=-0.0239 dphi=+0.0214 | mód #0
+  iter 3/20 | anchor=False c=0.9355 | qpu=3.00s várakozás=17.1s | dA=-0.0324 df=-0.0443 dphi=+0.0286 | mód #8
+  iter 4/20 | anchor=False c=0.9355 | qpu=3.00s várakozás=127.9s | dA=-0.1098 df=+0.0020 dphi=+0.0754 | mód #8
+  iter 5/20 | anchor=False c=0.9355 | qpu=3.00s várakozás=135.9s | dA=-0.1010 df=-0.0012 dphi=-0.1070 | mód #15
+  iter 6/20 | anchor=True c=0.9326 | qpu=3.00s várakozás=14.0s | dA=-0.1204 df=-0.0053 dphi=-0.3214 | mód #6
+  iter 7/20 | anchor=False c=0.9326 | qpu=3.00s várakozás=18.9s | dA=-0.1221 df=-0.0117 dphi=-0.2380 | mód #0
+  iter 8/20 | anchor=False c=0.9326 | qpu=3.00s várakozás=11.2s | dA=-0.1506 df=-0.0410 dphi=-0.2324 | mód #6
+  iter 9/20 | anchor=False c=0.9326 | qpu=3.00s várakozás=14.8s | dA=-0.1078 df=-0.0351 dphi=-0.2214 | mód #6
+  iter 10/20 | anchor=False c=0.9326 | qpu=3.00s várakozás=11.4s | dA=-0.1242 df=-0.0084 dphi=-0.1960 | mód #0
+  iter 11/20 | anchor=True c=0.9346 | qpu=3.00s várakozás=8.3s | dA=-0.2032 df=+0.0005 dphi=-0.2482 | mód #0
+  iter 12/20 | anchor=False c=0.9346 | qpu=3.00s várakozás=11.5s | dA=-0.3767 df=-0.0007 dphi=-0.3263 | mód #0
+  iter 13/20 | anchor=False c=0.9346 | qpu=3.00s várakozás=8.7s | dA=-0.3917 df=-0.0007 dphi=-0.1918 | mód #6
+  iter 14/20 | anchor=False c=0.9346 | qpu=3.00s várakozás=8.0s | dA=-0.1000 df=-0.0254 dphi=-0.2620 | mód #15
+  iter 15/20 | anchor=False c=0.9346 | qpu=3.00s várakozás=12.0s | dA=-0.2901 df=-0.0019 dphi=-0.3304 | mód #7
+  iter 16/20 | anchor=True c=0.9346 | qpu=3.00s várakozás=9.5s | dA=-0.0576 df=-0.0128 dphi=-0.2274 | mód #15
+  iter 17/20 | anchor=False c=0.9346 | qpu=3.00s várakozás=17.9s | dA=-0.2957 df=-0.0050 dphi=-0.2586 | mód #15
+  iter 18/20 | anchor=False c=0.9346 | qpu=3.00s várakozás=11.9s | dA=-0.4231 df=-0.0164 dphi=-0.2140 | mód #15
+  iter 19/20 | anchor=False c=0.9346 | qpu=3.00s várakozás=8.5s | dA=-0.1583 df=-0.0151 dphi=-0.2050 | mód #15
+  iter 20/20 | anchor=True c=0.9404 | qpu=3.00s várakozás=12.5s | dA=-0.1206 df=-0.0110 dphi=-0.2643 | mód #0
+
+==============================================================================
+AZ ITERÁCIÓK ÖSSZESÍTÉSE
+==============================================================================
+  QPU-idő összesen : 60.000 mp
+  falióra-idő      : 486.5 mp (átlag 24.3 mp/iter)
+  kvóta maradt     : 75 mp
+  kvóta fogyás     : 60.0 mp
+
+  A DEKÓDOLÁS PONTOSSÁGA (a hibaméret bázisa az ideális visszafejtés):
+    A: nyers       átlag 0.03596  max 0.07911
+    A: torzítástlan átlag 0.17552  max 0.42313
+    f: nyers       átlag 0.02236  max 0.06492
+    f: torzítástlan átlag 0.01375  max 0.04426
+    φ: nyers       átlag 0.34289  max 0.46413
+    φ: torzítástlan átlag 0.19890  max 0.33039
+  az élő c: min 0.9326 max 0.9404 (a mért Bell-egyensúly)
+  a mód-argmax sor: [0, 0, 8, 8, 15, 6, 0, 6, 6, 0, 0, 0, 6, 15, 7, 15, 15, 15, 15, 0]
+  a klasszikus kontroll argmax sora: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+  az összefoglaló: C:\Users\mater\.minimax\sessions\mvs_4be75a039e3e4dd2a6a370720f28065c\workspace\qoi-repo\measurement_raw\loop_summary_20261027T010656Z.json

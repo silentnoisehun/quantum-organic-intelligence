@@ -1,0 +1,16 @@
+{
+ "label": "wave_f",
+ "job_id": "dbg197giudkc73e3g53g",
+ "backend": "ibm_fez",
+ "shots": 1024,
+ "timestamp_utc": "2026-10-27T01:03:57Z",
+ "counts_raw": {
+  "00": 520,
+  "11": 463,
+  "10": 28,
+  "01": 13
+ },
+ "true": 0.25,
+ "decoded": 0.23880017673419626,
+ "error": -0.011199823265803738
+}

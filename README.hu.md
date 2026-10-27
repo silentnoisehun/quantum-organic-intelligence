@@ -111,6 +111,11 @@ python scripts/quantum_loop_hardware.py --backend ibm_fez --iterations 100 --sho
 > sor-várakozást **méri**, nem feltételezi, és a QPU-mp-eket meg a falióra-időt
 > külön kiírja. A fenntartott ablakhoz másik plan instance kell.
 
+> **A hardveres futás mérési jelentése** —
+> `docs/MEASUREMENTS-HARDWARE-20261027.txt`, a futásnaplókkal együtt
+> (`docs/RUNLOG-*.txt`). Minden szám a `measurement_raw/` nyers fájljaiból
+> újraszámítható a `scripts/summarize_hardware_run.py` szkripttel.
+
 > **Környezet:** a méréshez tiszta virtuális környezet ajánlott. A Qiskit 1.x és
 > 2.x nem él együtt ugyanabban a Pythonban:
 > ```bash

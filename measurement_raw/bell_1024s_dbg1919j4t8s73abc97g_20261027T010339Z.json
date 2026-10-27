@@ -1,0 +1,20 @@
+{
+ "label": "bell",
+ "job_id": "dbg1919j4t8s73abc97g",
+ "backend": "ibm_fez",
+ "shots": 1024,
+ "timestamp_utc": "2026-10-27T01:03:39Z",
+ "counts_raw": {
+  "00": 486,
+  "11": 476,
+  "10": 37,
+  "01": 25
+ },
+ "fidelity": 0.939453125,
+ "counts_normalized": {
+  "00": 486,
+  "11": 476,
+  "10": 37,
+  "01": 25
+ }
+}

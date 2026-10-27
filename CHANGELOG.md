@@ -1,5 +1,60 @@
 # Changelog
 
+## [0.2.0] — 2026-10-27
+
+### Added
+
+- **The quantum–classical loop on a real QPU** (`scripts/quantum_loop_hardware.py`),
+  with the three layers: the three circuits of an iteration bundled into
+  one job, a Runtime Session when the plan allows it, and a live Bell
+  anchor that refreshes the measured hardware quality `c`.
+- **`crates/quantum-bridge/src/bin/bridge-cli.rs`** — the decoding lives in
+  Rust and is callable from the loop script, so the mathematics has one
+  source. It also computes the ideal decode (`ideal-wave`), which is the
+  correct baseline for the decoding error.
+- **The raw measurement files are version controlled** (`measurement_raw/`),
+  so every number quoted in `docs/` can be traced back to the run it came
+  from. `scripts/summarize_hardware_run.py` recomputes the summary from
+  them, and the CI checks that the files stay readable.
+- A measurement report for the hardware run:
+  `docs/MEASUREMENTS-HARDWARE-20261027.txt`, with the run logs in
+  `docs/RUNLOG-*.txt`.
+
+### Measured on ibm_fez (156 qubit, 1024 shots)
+
+- **The hardware quality `c` measured live**: 0.9170–0.9531, mean 0.9350
+  over 14 anchors, a drift of +0.0361. It tracks the reference value of
+  0.949 without being told it.
+- **The loop visits 7 of the 16 modes** over 68 iterations (the histogram
+  is [27, 4, 3, 0, 0, 0, 9, 10, 0, 0, 0, 0, 0, 0, 6, 9]) — the trajectory
+  is structured, not collapsed into a single mode.
+- **The 16-mode argmax on hardware: 0/6 = 0.00%** — the quantum path
+  never reproduced the classical winner (Brain); the winners were
+  Creativity (4×) and Logic (2×). Consistent with the simulated 38.65%
+  at the same Bell fidelity (p = 0.3865⁶ = 5.2%).
+- **The decoding is accurate without a correction**: the amplitude
+  channel's mean absolute error is 0.026 with a mean signed error of
+  +0.0125 (i.e. unbiased within the shot noise).
+- **The `c` correction is not a general improvement.** Feeding the live
+  `c` back into the decoder as an inverse-noise correction raises the
+  amplitude error to 0.212 with a mean signed error of −0.212. A
+  deterministic check shows why: the correction already breaks an
+  *error-free* measurement (A_kod = 0.3 → error −0.300, saturated). The
+  real hardware noise is asymmetric, so the symmetric
+  `p = c·p + (1−c)·0.5` model does not hold. The live `c` is a quality
+  indicator, not a decoder correction.
+- **The open plan refuses sessions** ("not authorized to run a session
+  when using the open plan"), so the queue wait had to be measured
+  instead of assumed: 6.8 s to 137.5 s per iteration.
+
+### Known limitations
+
+The 1000-iteration protocol is **not runnable on the open plan**: at the
+measured 2.96 s of QPU time per iteration it needs ~2960 s against a
+600 s quota, and without a session each iteration also waits in the
+queue. A plan instance that allows sessions is required for the full
+protocol. The report states this as measured, not as an estimate.
+
 ## [0.1.0] — 2026-10-27
 
 ### Added

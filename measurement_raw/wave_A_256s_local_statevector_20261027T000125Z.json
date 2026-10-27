@@ -1,0 +1,14 @@
+{
+ "label": "wave_A",
+ "job_id": "local_statevector",
+ "backend": "statevector (ide\u00e1lis, helyi)",
+ "shots": 256,
+ "timestamp_utc": "2026-10-27T00:01:25Z",
+ "counts_raw": {
+  "1": 58,
+  "0": 198
+ },
+ "true": 1.0,
+ "decoded": 0.9921692758957971,
+ "error": -0.007830724104202935
+}

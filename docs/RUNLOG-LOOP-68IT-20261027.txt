@@ -1,0 +1,99 @@
+bridge-cli: E:\mm-target-qoi\debug\bridge-cli.exe
+python.exe : qiskit_runtime_service._discover_account:WARNING:2026-10-27 01:37:30,182: Loading account with the given t
+oken. A saved account will not be used.
+At line:10 char:1
++ & $py -u "$r\scripts\quantum_loop_hardware.py" --backend ibm_fez --it ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (qiskit_runtime_...ll not be used.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+qiskit_runtime_service.__init__:WARNING:2026-10-27 01:37:35,641: Instance was not set at service instantiation. Free an
+d trial plan instances will be prioritized. Based on the following filters: (tags: None, region: us-east, eu-de), and a
+vailable plans: (open), the available account instances are: open-instance. If you need a specific instance set it expl
+icitly either by using a saved account with a saved default instance or passing it in directly to QiskitRuntimeService(
+). Alternatively, pass instance='auto' or save it to your account for auto-selection without warning.
+qiskit_runtime_service.backends:WARNING:2026-10-27 01:37:35,641: Using instance: open-instance, plan: open
+backend: ibm_fez (156 qubit)
+
+==============================================================================
+A KVANTUM-KLASSZIKUS HUROK VALÓDI HARDVEREN — ibm_fez
+  iteráció=100 lövés=1024 anchor-minden=5 GPE-lépés=50 session=True
+==============================================================================
+kvóta előtte: 362 mp (limit 600 mp)
+! a session nem elérhető ezen a csomagon: RequestsApiError
+  → job mód: minden iteráció külön sorba áll. A várakozást mérjük.
+C:\Users\mater\.minimax\sessions\mvs_4be75a039e3e4dd2a6a370720f28065c\workspace\qoi-repo\scripts\quantum_loop_hardware.
+py:336: DeprecationWarning: The SamplerV2 class is deprecated as of qiskit-ibm-runtime 0.50.0 and will be removed no so
+oner than 3 months after the release date. `qiskit_ibm_runtime.executor_sampler.Sampler` provides a new Sampler impleme
+ntation that runs all the pre- and post-processing in the client side. The top-level `qiskit_ibm_runtime.Sampler` impor
+t will be updated to point to the client-side sampler in an upcoming release, with the legacy Sampler being available u
+ntil the deprecation is completed.
+  sampler = SamplerV2(mode=session_ctx if session_ctx is not None else backend)
+  iter 1/100 | anchor=True c=0.9268 | qpu=3.00s várakozás=35.8s | dA=-0.0372 df=-0.0039 dphi=+0.0709 | mód #0
+  iter 2/100 | anchor=False c=0.9268 | qpu=3.00s várakozás=25.7s | dA=-0.0430 df=-0.0211 dphi=-0.3820 | mód #0
+  iter 3/100 | anchor=False c=0.9268 | qpu=3.00s várakozás=44.7s | dA=-0.1086 df=-0.0277 dphi=-0.0012 | mód #0
+  iter 4/100 | anchor=False c=0.9268 | qpu=3.00s várakozás=12.3s | dA=-0.0657 df=-0.0091 dphi=+0.0459 | mód #1
+  iter 5/100 | anchor=False c=0.9268 | qpu=3.00s várakozás=10.6s | dA=-0.0979 df=-0.0063 dphi=-0.3419 | mód #1
+  iter 6/100 | anchor=True c=0.9170 | qpu=3.00s várakozás=9.6s | dA=-0.0940 df=-0.0084 dphi=-0.0001 | mód #1
+  iter 7/100 | anchor=False c=0.9170 | qpu=3.00s várakozás=11.6s | dA=-0.1691 df=-0.0170 dphi=-0.1464 | mód #1
+  iter 8/100 | anchor=False c=0.9170 | qpu=3.00s várakozás=11.9s | dA=-0.0992 df=-0.0031 dphi=-0.1150 | mód #7
+  iter 9/100 | anchor=False c=0.9170 | qpu=3.00s várakozás=8.2s | dA=-0.0702 df=-0.0144 dphi=-0.3046 | mód #7
+  iter 10/100 | anchor=False c=0.9170 | qpu=3.00s várakozás=10.7s | dA=-0.1697 df=-0.0109 dphi=-0.1684 | mód #14
+  iter 11/100 | anchor=True c=0.9512 | qpu=3.00s várakozás=13.1s | dA=-0.0529 df=-0.0077 dphi=-0.2045 | mód #6
+  iter 12/100 | anchor=False c=0.9512 | qpu=3.00s várakozás=7.1s | dA=-0.0590 df=+0.0003 dphi=-0.1912 | mód #7
+  iter 13/100 | anchor=False c=0.9512 | qpu=3.00s várakozás=11.2s | dA=-0.1500 df=-0.0069 dphi=-0.1669 | mód #7
+  iter 14/100 | anchor=False c=0.9512 | qpu=3.00s várakozás=12.7s | dA=-0.1270 df=-0.0097 dphi=-0.2580 | mód #0
+  iter 15/100 | anchor=False c=0.9512 | qpu=3.00s várakozás=7.3s | dA=-0.0848 df=-0.0323 dphi=-0.2454 | mód #7
+  iter 16/100 | anchor=True c=0.9404 | qpu=3.00s várakozás=11.6s | dA=-0.1496 df=-0.0256 dphi=-0.3405 | mód #0
+  iter 17/100 | anchor=False c=0.9404 | qpu=3.00s várakozás=11.9s | dA=-0.1135 df=-0.0155 dphi=-0.2593 | mód #7
+  iter 18/100 | anchor=False c=0.9404 | qpu=3.00s várakozás=7.5s | dA=-0.1347 df=-0.0010 dphi=-0.2205 | mód #0
+  iter 19/100 | anchor=False c=0.9404 | qpu=3.00s várakozás=11.0s | dA=-0.1899 df=-0.0043 dphi=-0.2725 | mód #7
+  iter 20/100 | anchor=False c=0.9404 | qpu=3.00s várakozás=12.8s | dA=-0.0684 df=-0.0002 dphi=-0.3235 | mód #7
+  iter 21/100 | anchor=True c=0.9502 | qpu=3.00s várakozás=17.3s | dA=-0.0614 df=+0.0009 dphi=-0.3198 | mód #7
+  iter 22/100 | anchor=False c=0.9502 | qpu=3.00s várakozás=12.5s | dA=-0.0575 df=-0.0072 dphi=-0.3838 | mód #7
+  iter 23/100 | anchor=False c=0.9502 | qpu=3.00s várakozás=18.0s | dA=-0.0760 df=-0.0056 dphi=-0.3190 | mód #15
+  iter 24/100 | anchor=False c=0.9502 | qpu=3.00s várakozás=12.5s | dA=-0.1568 df=-0.0031 dphi=-0.3716 | mód #15
+  iter 25/100 | anchor=False c=0.9502 | qpu=3.00s várakozás=17.6s | dA=-0.1017 df=-0.0048 dphi=-0.2866 | mód #15
+  iter 26/100 | anchor=True c=0.9277 | qpu=3.00s várakozás=12.8s | dA=-0.2165 df=-0.0061 dphi=-0.2683 | mód #15
+  iter 27/100 | anchor=False c=0.9277 | qpu=3.00s várakozás=18.5s | dA=-0.3830 df=-0.0046 dphi=-0.3124 | mód #15
+  iter 28/100 | anchor=False c=0.9277 | qpu=3.00s várakozás=13.0s | dA=-0.2526 df=-0.0106 dphi=-0.2912 | mód #15
+  iter 29/100 | anchor=False c=0.9277 | qpu=3.00s várakozás=7.3s | dA=-0.3801 df=-0.0135 dphi=-0.2696 | mód #15
+  iter 30/100 | anchor=False c=0.9277 | qpu=3.00s várakozás=11.8s | dA=-0.2625 df=-0.0431 dphi=-0.2167 | mód #15
+  iter 31/100 | anchor=True c=0.9336 | qpu=3.00s várakozás=16.9s | dA=-0.3607 df=-0.0128 dphi=-0.2556 | mód #15
+  iter 32/100 | anchor=False c=0.9336 | qpu=3.00s várakozás=23.1s | dA=-0.2208 df=-0.0139 dphi=-0.2668 | mód #0
+  iter 33/100 | anchor=False c=0.9336 | qpu=3.00s várakozás=7.7s | dA=-0.3658 df=-0.0101 dphi=-0.2961 | mód #0
+  iter 34/100 | anchor=False c=0.9336 | qpu=3.00s várakozás=6.8s | dA=-0.2272 df=-0.0071 dphi=-0.4002 | mód #0
+  iter 35/100 | anchor=False c=0.9336 | qpu=3.00s várakozás=11.6s | dA=-0.1826 df=+0.0051 dphi=-0.3021 | mód #0
+  iter 36/100 | anchor=True c=0.9248 | qpu=3.00s várakozás=12.8s | dA=-0.3892 df=-0.0145 dphi=-0.2837 | mód #0
+  iter 37/100 | anchor=False c=0.9248 | qpu=3.00s várakozás=17.8s | dA=-0.2104 df=-0.0065 dphi=-0.3133 | mód #0
+  iter 38/100 | anchor=False c=0.9248 | qpu=3.00s várakozás=18.4s | dA=-0.3778 df=-0.0056 dphi=-0.2743 | mód #0
+  iter 39/100 | anchor=False c=0.9248 | qpu=3.00s várakozás=16.4s | dA=-0.1554 df=+0.0007 dphi=-0.3612 | mód #0
+  iter 40/100 | anchor=False c=0.9248 | qpu=3.00s várakozás=23.9s | dA=-0.3907 df=-0.0047 dphi=-0.3136 | mód #0
+  iter 41/100 | anchor=True c=0.9336 | qpu=3.00s várakozás=11.7s | dA=-0.2462 df=-0.0009 dphi=-0.3228 | mód #0
+  iter 42/100 | anchor=False c=0.9336 | qpu=3.00s várakozás=12.2s | dA=-0.2735 df=-0.0050 dphi=-0.3559 | mód #0
+  iter 43/100 | anchor=False c=0.9336 | qpu=3.00s várakozás=7.5s | dA=-0.2431 df=-0.0122 dphi=-0.3326 | mód #0
+  iter 44/100 | anchor=False c=0.9336 | qpu=3.00s várakozás=11.4s | dA=-0.1701 df=-0.0109 dphi=-0.3363 | mód #0
+  iter 45/100 | anchor=False c=0.9336 | qpu=3.00s várakozás=13.2s | dA=-0.2820 df=-0.0108 dphi=-0.3438 | mód #0
+  iter 46/100 | anchor=True c=0.9297 | qpu=3.00s várakozás=8.0s | dA=-0.2117 df=+0.0004 dphi=-0.3310 | mód #0
+  iter 47/100 | anchor=False c=0.9297 | qpu=3.00s várakozás=11.7s | dA=-0.3104 df=-0.0119 dphi=-0.3350 | mód #6
+  iter 48/100 | anchor=False c=0.9297 | qpu=0.00s várakozás=8.2s | dA=-0.2992 df=-0.0045 dphi=-0.3872 | mód #0
+  iter 49/100 | anchor=False c=0.9297 | qpu=3.00s várakozás=8.1s | dA=-0.2906 df=-0.0048 dphi=-0.4002 | mód #0
+  iter 50/100 | anchor=False c=0.9297 | qpu=3.00s várakozás=12.4s | dA=-0.2873 df=-0.0101 dphi=-0.0046 | mód #0
+  iter 51/100 | anchor=True c=0.9375 | qpu=3.00s várakozás=13.4s | dA=-0.2849 df=-0.0200 dphi=+0.0559 | mód #0
+  iter 52/100 | anchor=False c=0.9375 | qpu=3.00s várakozás=9.0s | dA=-0.2815 df=-0.0133 dphi=+0.2393 | mód #0
+  iter 53/100 | anchor=False c=0.9375 | qpu=3.00s várakozás=17.9s | dA=-0.2778 df=-0.0039 dphi=+0.2188 | mód #2
+  iter 54/100 | anchor=False c=0.9375 | qpu=3.00s várakozás=10.2s | dA=-0.2751 df=-0.0056 dphi=-0.0178 | mód #2
+  iter 55/100 | anchor=False c=0.9375 | qpu=3.00s várakozás=8.5s | dA=-0.2719 df=-0.0101 dphi=+0.1104 | mód #2
+  iter 56/100 | anchor=True c=0.9297 | qpu=3.00s várakozás=12.1s | dA=-0.2701 df=-0.0112 dphi=-0.0138 | mód #6
+  iter 57/100 | anchor=False c=0.9297 | qpu=3.00s várakozás=10.2s | dA=-0.2726 df=-0.0159 dphi=-0.0036 | mód #6
+  iter 58/100 | anchor=False c=0.9297 | qpu=3.00s várakozás=23.1s | dA=-0.2758 df=-0.0004 dphi=-0.3124 | mód #6
+  iter 59/100 | anchor=False c=0.9297 | qpu=3.00s várakozás=10.1s | dA=-0.2756 df=-0.0195 dphi=-0.2561 | mód #6
+  iter 60/100 | anchor=False c=0.9297 | qpu=3.00s várakozás=19.4s | dA=-0.2733 df=-0.0212 dphi=-0.4200 | mód #6
+  iter 61/100 | anchor=True c=0.9531 | qpu=3.00s várakozás=10.4s | dA=-0.2721 df=-0.0210 dphi=-0.4371 | mód #6
+  iter 62/100 | anchor=False c=0.9531 | qpu=3.00s várakozás=63.2s | dA=-0.2728 df=-0.0232 dphi=-0.3942 | mód #6
+  iter 63/100 | anchor=False c=0.9531 | qpu=3.00s várakozás=25.2s | dA=-0.2732 df=-0.0630 dphi=-0.3336 | mód #14
+  iter 64/100 | anchor=False c=0.9531 | qpu=3.00s várakozás=53.7s | dA=-0.2767 df=-0.0264 dphi=-0.3875 | mód #14
+  iter 65/100 | anchor=False c=0.9531 | qpu=3.00s várakozás=8.1s | dA=-0.1994 df=-0.0192 dphi=-0.3733 | mód #14
+  iter 66/100 | anchor=True c=0.9355 | qpu=3.00s várakozás=11.2s | dA=-0.2773 df=-0.0386 dphi=-0.2751 | mód #14
+  iter 67/100 | anchor=False c=0.9355 | qpu=3.00s várakozás=137.5s | dA=-0.2816 df=-0.0372 dphi=-0.3280 | mód #14
+  iter 68/100 | anchor=False c=0.9355 | qpu=3.00s várakozás=82.9s | dA=-0.2777 df=-0.0299 dphi=-0.2484 | mód #0

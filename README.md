@@ -111,6 +111,11 @@ python scripts/quantum_loop_hardware.py --backend ibm_fez --iterations 100 --sho
 > queue wait instead of assuming it, and prints the QPU seconds and the wall
 > clock separately. A reserved window would need a different plan instance.
 
+> **The measurement report for the hardware run** —
+> `docs/MEASUREMENTS-HARDWARE-20261027.txt`, with the run logs in
+> `docs/RUNLOG-*.txt`. Every number in it is recomputable from the raw files
+> in `measurement_raw/` with `scripts/summarize_hardware_run.py`.
+
 > **Environment:** a clean virtual environment is recommended for the
 > measurement. Qiskit 1.x and 2.x cannot coexist in the same Python:
 > ```bash

@@ -201,8 +201,12 @@ def run_hardware_loop(args, cli, qc, service, backend, sampler, raw_dir, tag):
         ])
         a_ideal, f_ideal, ph_ideal = [float(x) for x in ideal_out.split()]
 
-        # visszatöltés a folyadékba
-        psi = fluid.excite(psi, a_cor / math.pi, f_cor / 0.5, ph_cor / math.pi)
+        # visszatöltés a folyadékba — a választott visszacsatolás szerint
+        if args.feedback == "raw":
+            a_fb, f_fb, ph_fb = a_raw, f_raw, ph_raw
+        else:
+            a_fb, f_fb, ph_fb = a_cor, f_cor, ph_cor
+        psi = fluid.excite(psi, a_fb / math.pi, f_fb / 0.5, ph_fb / math.pi)
         for _ in range(args.gpe_steps):
             psi = fluid.gpe_step(psi, live=True)
 
@@ -211,6 +215,7 @@ def run_hardware_loop(args, cli, qc, service, backend, sampler, raw_dir, tag):
             "iteration": it,
             "job_id": job_id,
             "anchor": with_anchor,
+            "feedback": args.feedback,
             "c_live": c_live,
             "qpu_seconds": qpu,
             "wall_seconds": wall,
@@ -232,6 +237,12 @@ def run_hardware_loop(args, cli, qc, service, backend, sampler, raw_dir, tag):
         }
         if anchor_counts is not None:
             entry["counts"]["anchor"] = {str(k): int(v) for k, v in anchor_counts.items()}
+        if args.save_state:
+            # 🧬 A FOLYADÉKÁLLAPOT: a nyers fájl így önmagában elegendő ahhoz,
+            # hogy a mód-energiákat és a koherenciát újraszámítsuk — a
+            # mérési eredmény teljesen visszakövethető a nyers adattal.
+            entry["psi_real"] = [[round(float(v), 6) for v in row] for row in psi.real]
+            entry["psi_imag"] = [[round(float(v), 6) for v in row] for row in psi.imag]
         log.append(entry)
 
         raw_path = raw_dir / f"loop_{tag}_iter{it:04d}_{job_id}.json"
@@ -252,6 +263,7 @@ def run_hardware_loop(args, cli, qc, service, backend, sampler, raw_dir, tag):
                 "decoded_corrected": entry["decoded_corrected"],
                 "mode_argmax": entry["mode_argmax"],
                 "coherence": entry["coherence"],
+                "feedback": args.feedback,
             }, fh, indent=1)
 
         print(f"  iter {it+1}/{args.iterations} | anchor={with_anchor} c={c_live:.4f} | "
@@ -287,6 +299,11 @@ def main():
     ap.add_argument("--no-session", action="store_true", help="session nélkül (a várakozás mérésére)")
     ap.add_argument("--bridge-bin", default=None)
     ap.add_argument("--classical-control", action="store_true")
+    ap.add_argument("--feedback", choices=["corrected", "raw"], default="corrected",
+                    help="melyik dekódolás kerül vissza a folyadékba: a nyers vagy "
+                         "az élő c-vel torzítástlanított érték")
+    ap.add_argument("--no-save-state", dest="save_state", action="store_false",
+                    help="ne mentsük a folyadékállapotot a nyers fájlba")
     ap.add_argument("--out-dir", default=None)
     args = ap.parse_args()
 
@@ -377,6 +394,7 @@ def main():
         "shots": args.shots,
         "anchor_every": args.anchor_every,
         "gpe_steps": args.gpe_steps,
+        "feedback": args.feedback,
         "session": not args.no_session,
         "total_qpu_seconds": total_qpu,
         "total_wall_seconds": total_wall,
