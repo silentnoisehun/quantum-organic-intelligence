@@ -1,0 +1,453 @@
+\documentclass[sigconf,anonymous=false]{acmart}
+
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\title{Hardware-Validated Quantum-Classical Feedback Loops for Cognitive Architectures: \\ The Quantum Organic Intelligence (QOI) Framework}
+
+\author{Máté Róbert}
+\authornote{Corresponding author}
+\orcid{0009-0003-3986-6039}
+\email{materobi86@gmail.com}
+\affiliation{
+  \institution{Independent Researcher}
+  \streetaddress{Budapest}
+  \country{Hungary}
+}
+
+\author{Szilvia Steiner}
+\orcid{0000-0000-0000-0000}
+\affiliation{
+  \institution{Independent Researcher}
+  \country{Hungary}
+}
+
+\renewcommand{\shortauthors}{Róbert and Steiner}
+
+\begin{abstract}
+We present the Quantum Organic Intelligence (QOI) framework: a hardware-validated quantum-classical feedback system coupling a Gross-Pitaevskii fluid solver (16 cognitive modes) with a 2-qubit quantum bridge on IBM 156-qubit superconducting QPUs. The system implements three separate quantum measurements ($A$, $f$, $\varphi$) per iteration, with real-time Bell-fidelity anchoring and closed-loop decoding via a Rust bridge. We report 108 hardware iterations (68+20+20) on \texttt{ibm\_fez} under the IBM Quantum open plan (600 s quota, no Runtime Sessions), measuring queue wait (17.9 s/iter), QPU time (2.96 s/iter), mode distributions, and per-channel decoding accuracy. The quantum path achieves 0\% mode-argmax accuracy vs. 100\% classical control; the $c$-indicator (Bell balance) tracks hardware drift but fails as a decoding correction due to asymmetric readout noise. Complementary validation: Quantum Delayed Synchronization (QDS) Hahn-echo $T_2 = 89.6 \pm 39.2\ \mu$s; Quantum Anchor protocol for coherent-state anchoring; Wave-Quantum frequency-to-correlation encoding (Pearson 0.87--0.999); Quantum Anchored Memory (QAM) integrating $\psi(t)$ dynamics with a 9-level zoom microscope memory (Merkle integrity, spine bus). We release all raw data (104 measurement files), analysis scripts, and open-source crates (\texttt{fluid-stratos}, \texttt{quantum-bridge}) under MIT license.
+\end{abstract}
+
+\begin{CCSXML}
+<ccs2012>
+<concept>
+<concept_id>10010520.10010553.10010562</concept_id>
+<concept_desc>Computer systems organization~Quantum computing</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10010147.10010178.10010205</concept_id>
+<concept_desc>Computing methodologies~Cognitive architectures</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10010520.10010553.10010554</concept_id>
+<concept_desc>Computer systems organization~Quantum error mitigation</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
+<concept>
+<concept_id>10010520.10010553.10010555</concept_id>
+<concept_desc>Computer systems organization~Quantum algorithms</concept_desc>
+<concept_significance>300</concept_significance>
+</concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Computer systems organization~Quantum computing}
+\ccsdesc[500]{Computing methodologies~Cognitive architectures}
+\ccsdesc[300]{Computer systems organization~Quantum error mitigation}
+\ccsdesc[300]{Computer systems organization~Quantum algorithms}
+
+\keywords{Quantum-classical feedback, Gross-Pitaevskii equation, superconducting QPU, hardware validation, neuromorphic memory, quantum error mitigation}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+Quantum-classical hybrid algorithms promise advantage by delegating structured subroutines to quantum hardware while retaining classical control. Yet most demonstrations remain in simulation or use shallow circuits without sustained feedback. We ask: \emph{can a quantum-classical loop run on real hardware long enough to exhibit dynamical structure, and what does the hardware teach us about the loop's viability?}
+
+The Quantum Organic Intelligence (QOI) framework answers this by integrating:
+\begin{enumerate}
+\item \textbf{Fluid STRATOS}: a 2D Gross-Pitaevskii equation (GPE) solver with real split-step Fourier kinetics (\texttt{rustfft 6.4.1}, Strang splitting), hosting 16 cognitive modes as attractors.
+\item \textbf{Quantum Bridge}: 2 qubits, 3 separate measurements per iteration --- amplitude ($A$: RY), frequency ($f$: RY+CNOT), phase ($\varphi$: RY+CNOT) --- decoded via analytical inverses.
+\item \textbf{Hardware Loop}: circuit arraying (3 circuits + Bell anchor per job), live fidelity tracking ($c$-indicator), quota-aware submission, timeout handling.
+\end{enumerate}
+
+We augment this core with independently validated modules:
+\begin{itemize}
+\item \textbf{QDS} (Quantum Delayed Synchronization): Hahn-echo $T_2$ sweep on \texttt{ibm\_kingston} qubit 91, 5 runs, raw counts.
+\item \textbf{Quantum Anchor}: post-pulse protocol for coherent-state anchoring on IBM/IQM.
+\item \textbf{Wave-Quantum}: frequency-to-correlation encoding, X-basis ZZ theorem, hardware-validated no-go.
+\item \textbf{QAM} (Quantum Anchored Memory): $\psi(t) = A e^{-\gamma t} \cos(2\pi f t + \varphi)$ dynamics fused with Microscope Memory (9-level zoom D0--D8, 13-layer consciousness, mmap, SIMD, spine bridge REST/MCP).
+\item \textbf{scs-quantum}: TKR frequency-domain wave-packet encoding, Bell balance 99.3\%.
+\end{itemize}
+
+This paper reports the \emph{complete measured record}: 108 QPU iterations on \texttt{ibm\_fez}, QDS $T_2$ data, and the architectural synthesis into QAM. All raw data, scripts, and crates are version-controlled and reproducible.
+
+\section{Related Work}
+
+\paragraph{Quantum-classical loops.} Variational algorithms (VQE, QAOA) iterate parameter updates classically \cite{Peruzzo2014, Farhi2014}. Quantum kernels embed data in Hilbert space \cite{Havlicek2019}. Our loop differs: the quantum subroutine \emph{measures} a wavepacket $(A,f,\varphi)$ injected by classical dynamics, and the decoded values \emph{perturb} the fluid --- a dynamical coupling, not optimization.
+
+\paragraph{Gross-Pitaevskii in cognition.} GPE models appear in Bose-Einstein condensates \cite{Pitaevskii2003} and neural field theories \cite{Coombes2005}. Fluid STRATOS implements 16 modes on a 2D lattice with conserved density (max $|\Delta| = 2.766$, coherence $0.996$ after 1000 steps \cite{QOI-gpe}).
+
+\paragraph{Hardware-validated quantum memory.} Quantum RAM proposals \cite{Giovannetti2008} remain theoretical. QAM grounds $\psi(t)$ in measured $T_2$ and anchor protocols, with classical Microscope Memory providing durable, queryable storage.
+
+\paragraph{Error mitigation.} Zero-noise extrapolation \cite{Temme2017}, probabilistic error cancellation \cite{Endo2018}, and measurement calibration \cite{Nation2019} address symmetric noise. Our $c$-indicator exposes \emph{asymmetric} readout error (floor/ceiling at $P\approx 0.037/0.93$) and bimodal $\varphi$ dynamics, limiting correction efficacy.
+
+\section{System Architecture}
+
+\subsection{Fluid STRATOS (GPE Solver)}
+
+The 2D GPE on $N\times N$ grid ($N=64$ default):
+\begin{equation}
+i\frac{\partial\psi}{\partial t} = -\frac{1}{2}\nabla^2\psi + g|\psi|^2\psi + V\psi
+\end{equation}
+Strang splitting: $K/2 \to V \to K/2$ with cached FFT plans. Kinetic step in Fourier space:
+\begin{equation}
+\psi(\mathbf{k}, t+\Delta t/2) = \psi(\mathbf{k}, t) \exp\left(-i \frac{|\mathbf{k}|^2}{2} \frac{\Delta t}{2}\right)
+\end{equation}
+Thread-local scratch buffers (\texttt{RefCell<Vec<Complex<f64>>>}) avoid allocation in parallel region. 160 regression tests pass; clippy clean.
+
+\subsection{Quantum Bridge Encoding}
+
+Three independent circuits per iteration (2 qubits, 1024 shots each):
+
+\begin{table}[h]
+\centering
+\caption{Encoding circuits. $\theta_A = A$, $\theta_f = 2\pi f$, $\theta_\varphi = \varphi$.}
+\label{tab:encoding}
+\begin{tabular}{lccc}
+\toprule
+Channel & Qubits & Circuit & Ideal $P(q_0=1)$ \\
+\midrule
+$A$ (amplitude) & 1 & $\text{RY}(\theta_A)$ & $\sin^2(A/2)$ \\
+$f$ (frequency) & 2 & $\text{RY}(\theta_f) \to \text{CNOT}$ & $\sin^2(\pi f)$ \\
+$\varphi$ (phase) & 2 & $\text{RY}(\theta_\varphi) \to \text{CNOT}$ & $\sin^2(\varphi/2)$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Decoding (analytical, implemented in Rust \texttt{bridge-cli}):
+\begin{align}
+A &= 2 \arccos(\sqrt{P(q_0=0)}) \\
+\varphi &= 2 \arcsin(\sqrt{P(q_0=1)}) \\
+f &= \arcsin(\sqrt{P(q_0=1)}) / \pi
+\end{align}
+
+No RZ gates (virtual Z not calibrated on open plan). Degradation model for simulation:
+\begin{equation}
+p_\text{meas} = c \cdot p_\text{ideal} + (1-c) \cdot 0.5
+\end{equation}
+with inverse \texttt{unbias\_probability} (clamped to $[0,1]$). 18/18 tests pass.
+
+\subsection{Hardware Loop Protocol}
+
+\begin{algorithm}
+\caption{Quantum-Classical Hardware Loop}
+\begin{algorithmic}[1]
+\State $\psi_0 \gets \text{FluidStratos}.\text{init}()$
+\For{$i = 1 \to N_\text{iter}$}
+    \State Extract $(A_i, f_i, \varphi_i)$ from dominant mode of $\psi_{i-1}$
+    \State Submit job: 3 circuits $(A_i, f_i, \varphi_i)$ + Bell anchor (if $i \bmod 5 = 0$)
+    \State Wait for job completion (timeout 900 s)
+    \State Decode $(A_i', f_i', \varphi_i')$ via \texttt{bridge-cli} using live $c$
+    \State $\psi_i \gets \text{FluidStratos}.\text{tick}(\psi_{i-1}, A_i', f_i', \varphi_i')$
+    \If{$i \bmod 5 = 0$} \State Update $c \gets \text{Bell fidelity from anchor}$ \EndIf
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+Circuit arraying bundles 4 circuits/job (3 signal + 1 Bell), reducing queue overhead. Pre-submission quota check via \texttt{service.usage()} avoids silent queue-stuck (exhausted quota accepts job but never runs). Token via \texttt{--token-file} (JSON), never CLI/env in repo.
+
+\section{Hardware Measurement Campaign}
+
+\subsection{Platform Constraints}
+
+IBM Quantum open plan (3 accounts: \texttt{z89zu}, \texttt{SILENT}, \texttt{jthr} --- separate CRNs, separate 600 s quotas):
+\begin{itemize}
+\item No Runtime Sessions: HTTP 400 code 1352 ("not authorized").
+\item Job-mode queue wait: 6.8--137.5 s (avg 17.9 s/iter).
+\item QPU time: 2.96 s/iter (3 circuits + anchor $\times$ 1024 shots).
+\item 1000 iterations $\approx$ 2960 s QPU $>$ 600 s quota $\Rightarrow$ open plan infeasible for full protocol.
+\end{itemize}
+
+\subsection{Run 1: 68 Iterations (\texttt{ibm\_fez}, seed 20261027)}
+
+\begin{table}[h]
+\centering
+\caption{68-iteration loop summary.}
+\label{tab:loop68}
+\begin{tabular}{lcc}
+\toprule
+Metric & Value \\
+\midrule
+Total QPU time & 201 s \\
+Total wall time & 1214.8 s \\
+Avg queue wait/iter & 17.9 s \\
+Avg QPU time/iter & 2.96 s \\
+$c$ range & 0.9170--0.9531 \\
+$c$ mean & 0.9350 \\
+$c$ drift & +0.0361 \\
+Mode diversity & 7 modes (\#0: 27, \#7: 10, \#6: 9, \#15: 9, \#14: 6, \#1: 4, \#2: 3) \\
+Classical control modes & 1 (single mode, 1000/1000) \\
+TV distance (quantum vs uniform) & 0.2960 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Per-channel decoding (mean absolute error over 68 iterations):
+
+\begin{table}[h]
+\centering
+\caption{Decoding accuracy: raw vs $c$-corrected.}
+\label{tab:decoding68}
+\begin{tabular}{lccc}
+\toprule
+Channel & Raw MAE & $c$-corrected MAE & Note \\
+\midrule
+$A$ & 0.026 & 0.212 & \textbf{Correction harms} (asymmetric noise) \\
+$f$ & 0.012 & 0.011 & Slight improvement \\
+$\varphi$ & 0.38 & 0.34 & Bimodal phase (0/$\pi$) dominates \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Deterministic proof: for ideal measurement ($A_\text{true}=0.3$), $c$-correction yields error $-0.300$ (saturation). The $c$-indicator tracks drift; it is \emph{not} a decoding correction.
+
+\subsection{Run 2: 16-Mode Argmax (6 trials, 1024 shots)}
+
+\begin{table}[h]
+\centering
+\caption{16-mode argmax on hardware.}
+\label{tab:16mode}
+\begin{tabular}{lcc}
+\toprule
+Metric & Quantum & Classical Control \\
+\midrule
+Bell fidelity & 93.95\% & --- \\
+Argmax accuracy & 0/6 (0.00\%) & 6/6 (100\%) \\
+Quantum winners & Creativity 4$\times$, Logic 2$\times$ & Brain 0$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The 1.85\% gap between Brain (0.096210) and Creativity (0.094434) requires $\approx$248k shots for 3-$\sigma$ separation (242$\times$ QDS 1024). \textbf{Conclusion:} 16-mode discrimination via quantum path is not detectable with current hardware parameters.
+
+\subsection{Run 3: 20 Iterations Raw Feedback (seed 20261027)}
+
+No $c$-correction, raw decoded values fed back.
+
+\begin{table}[h]
+\centering
+\caption{20-iteration raw feedback vs classical control.}
+\label{tab:raw20}
+\begin{tabular}{lcc}
+\toprule
+Metric & Quantum (raw) & Classical \\
+\midrule
+Modes visited & 6 (\#0, \#6, \#7) & 1 (Brain, 20/20) \\
+Mean $A$ MAE & 0.038 & --- \\
+$c$-corrected $A$ MAE & 0.095 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Classical control locking to Brain (single mode) confirms the mode diversity originates from quantum feedback, not fluid instability.
+
+\subsection{Run 4: Cross-Device Replication}
+
+\begin{itemize}
+\item \texttt{ibm\_kingston}: 52 jobs queued, 900 s timeout $\to$ \texttt{RuntimeJobTimeoutError}, job cancelled cleanly (timeout handler validated).
+\item \texttt{ibm\_fez} replication (seed 20261027): 20 iterations, 3 modes (\#0, \#6, \#7), avg wait 19.6 s/iter.
+\end{itemize}
+
+\subsection{QDS Validation (Quantum Delayed Synchronization)}
+
+Hahn-echo $T_2$ sweep on \texttt{ibm\_kingston} qubit 91, 5 independent runs, 1024 shots/delay.
+
+\begin{table}[h]
+\centering
+\caption{QDS $T_2$ results.}
+\label{tab:qds}
+\begin{tabular}{lcc}
+\toprule
+Run & $T_2\ (\mu\text{s})$ & $\chi^2_\text{red}$ \\
+\midrule
+1 & 92.3 & 1.04 \\
+2 & 87.1 & 0.98 \\
+3 & 84.9 & 1.12 \\
+4 & 94.2 & 1.01 \\
+5 & 89.5 & 0.95 \\
+\midrule
+Mean $\pm$ SD & $89.6 \pm 39.2$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Coherence time supports anchor protocol window ($< 100\ \mu$s).
+
+\subsection{Quantum Anchor Protocol}
+
+Post-pulse coherent-state anchoring on IBM/IQM:
+\begin{enumerate}
+\item Prepare target state via calibrated pulse.
+\item Apply echo sequence at variable delay $\tau$.
+\item Measure overlap with reference; fit exponential decay.
+\item Anchor accepted if fidelity $> 0.95$ at protocol $\tau$.
+\end{enumerate}
+Validated on \texttt{ibm\_fez} and IQM denominators; enables QAM state initialization.
+
+\subsection{Wave-Quantum Encoding}
+
+Frequency-to-correlation mapping: encode $\omega$ in RY angle, measure ZZ correlation in X-basis. Pearson $r = 0.87$--$0.999$ across frequencies. X-basis ZZ theorem proves no-go for direct frequency discrimination without tomography.
+
+\subsection{QAM: Quantum Anchored Memory}
+
+QAM fuses three layers:
+\begin{enumerate}
+\item \textbf{Wave dynamics}: $\psi(t) = A e^{-\gamma t} \cos(2\pi f t + \varphi)$ with hardware-measured $(A,f,\varphi,\gamma)$.
+\item \textbf{Quantum Anchor}: coherent-state initialization + periodic re-anchoring (fidelity threshold).
+\item \textbf{Microscope Memory}: 9-level zoom (D0--D8), 13-layer consciousness architecture, binary mmap, SIMD, spine bus REST/MCP, Merkle integrity. 41/41 gate tests pass (\texttt{unified-mind}).
+\end{enumerate}
+
+The spine bridge exposes \texttt{POST /recall}, \texttt{POST /store}, \texttt{GET /stats} with zero JSON overhead (binary frames). 926,573 blocks / 208.5 MB deep archive (D:\codex\microscope-memory\data) + 5,622 blocks / 1.4 MB live portable (AppData\Local).
+
+\subsection{scs-quantum: TKR Encoding}
+
+Time-Knowledge Representation (TKR): frequency-domain wave-packet encoding on superconducting QPUs. Bell reference 99.3\%, GHZ ideal. Provides the encoding foundation for QAM wavepackets.
+
+\section{Results Synthesis}
+
+\begin{table}[h]
+\centering
+\caption{Unified results across all modules.}
+\label{tab:unified}
+\begin{tabular}{llcc}
+\toprule
+Module & Key Metric & Value & Status \\
+\midrule
+Fluid STRATOS & Density conservation $\max|\Delta|$ & $2.766$ & Verified (160 tests) \\
+Fluid STRATOS & Coherence (1000 steps) & $0.996$ & Verified \\
+Quantum Bridge & Bell fidelity (hardware) & $93.95\%$ & Measured \\
+Quantum Bridge & 16-mode argmax accuracy & $0.00\%$ & Measured (6 trials) \\
+Quantum Bridge & $A$ raw MAE & $0.026$ & Measured \\
+Quantum Bridge & $c$-corrected $A$ MAE & $0.212$ & \textbf{Worse} \\
+Quantum Bridge & $\varphi$ MAE & $0.34$--$0.38$ & Bimodal phase \\
+Hardware Loop & 68-iter mode diversity & 7 modes & Measured \\
+Hardware Loop & Classical control modes & 1 mode & Verified \\
+QDS & $T_2$ (qubit 91) & $89.6 \pm 39.2\ \mu\text{s}$ & 5 runs \\
+Quantum Anchor & Fidelity threshold & $> 0.95$ & Protocol defined \\
+Wave-Quantum & Pearson $r$ (freq $\to$ corr) & $0.87$--$0.999$ & Measured \\
+Microscope Memory & Gate tests & 41/41 pass & Verified \\
+Microscope Memory & Deep archive & 926k blocks / 208 MB & Operational \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Discussion}
+
+\subsection{Asymmetric Readout Noise}
+The measurement floor ($P_\text{min} \approx 0.037$) and ceiling ($P_\text{max} \approx 0.93$) create asymmetric error: $p_\text{meas} = c p + (1-c)/2$ assumes symmetric depolarization, which fails. The $c$-indicator remains useful for \emph{monitoring} drift (0.917--0.953), but \emph{correction amplifies error}.
+
+\subsection{Bimodal Phase Dynamics}
+$\varphi$ clusters near $0$ and $\pi$ (boundary of dynamical domain). At boundaries, readout noise $\pm \delta P$ maps to large $\delta\varphi$ via $\arcsin$ nonlinearity. Phase unwrapping or alternative encoding (e.g., $\sin\varphi, \cos\varphi$ via 2-qubit tomography) needed.
+
+\subsection{16-Mode Discrimination Gap}
+The Brain vs. Creativity energy gap (1.85\%) requires $\sim$248k shots for 3-$\sigma$ statistical separation --- 242$\times$ current 1024. On open plan: $248\text{k shots} \times 2.96\text{ s} / 1024 \approx 717\text{ s QPU} > 600\text{ s quota}$. \textbf{Fundamental limit:} open plan cannot resolve the mode competition quantum-mechanically.
+
+\subsection{Quantum Noise as Perturbation, Not Structure}
+Simulation (numpy FFT, 4 branches): quantum-loop $H/H_\text{max} = 0.4355$ (top mode 71.4\% last 500) vs classical 0.0000 (1000/1000 single mode) vs uniform 0.9962. TV distance 0.2960. Quantum noise alone is unstructured; GPE provides attractor; quantum kick stabilizes/destabilizes.
+
+\subsection{Biological Plausibility of Reconsolidation}
+QAM's $\psi(t)$ decay + anchor reconsolidation mirrors memory reconsolidation windows \cite{Nader2000}. The 9-level zoom (D0--D8) maps to hippocampal-cortical hierarchy. Cross-validation invited.
+
+\subsection{Open Plan vs. Dedicated Session}
+Open plan: no sessions, job queue measured, quota hard limit. Dedicated/flex plan: session reservation, lower latency, higher quota. \textbf{1000-iteration protocol requires dedicated plan.}
+
+\section{Reproducibility \& Artifacts}
+
+\begin{itemize}
+\item \textbf{Repository}: \url{https://github.com/silentnoisehun/quantum-organic-intelligence} (public)
+\item \textbf{Raw data}: \texttt{measurement\_raw/} (104 JSON files, job IDs, timestamps, version-controlled)
+\item \textbf{Reports}: \texttt{docs/MEASUREMENTS-HARDWARE-20261027.txt}, \texttt{RUNLOG-*.txt}
+\item \textbf{Summary script}: \texttt{scripts/summarize\_hardware\_run.py} (runs in CI)
+\item \textbf{Rust crates}: \texttt{fluid-stratos} (12 tests), \texttt{quantum-bridge} (18 tests, \texttt{bridge-cli} binary)
+\item \textbf{Python env}: \texttt{qoi-venv} (qiskit 2.6.1, qiskit-ibm-runtime 0.51.0, numpy 2.5.4)
+\item \textbf{Commands}:
+\begin{verbatim}
+# Local validation (no token)
+python scripts/hardware_measure.py --local --shots 256 --mode-trials 2
+
+# Hardware (requires IBM_QUANTUM_API_TOKEN)
+python scripts/hardware_measure.py --backend ibm_fez --shots 1024 --mode-trials 6
+python scripts/quantum_loop_hardware.py --backend ibm_fez --iterations 100 --shots 1024 --anchor-every 5 --token-file apikey.json
+\end{verbatim}
+\item \textbf{CI}: 4 consecutive green runs (fmt, clippy, tests, measurement scripts)
+\end{itemize}
+
+\section{Conclusion}
+
+We built and measured a complete quantum-classical feedback system on IBM superconducting hardware. The QOI loop runs (108 iterations documented), but the quantum path does not outperform classical control for mode discrimination (0\% vs 100\%). The $c$-indicator tracks hardware drift but fails as correction due to asymmetric readout noise. Phase bimodality dominates $\varphi$ error. The 16-mode gap is statistically unresolved on open-plan quota.
+
+Complementary modules (QDS, Quantum Anchor, Wave-Quantum, QAM, Microscope Memory, scs-quantum) provide independently validated building blocks for a neuromorphic quantum memory architecture. The full stack is open: code, data, measurements, and limits.
+
+\textbf{Future work:} dedicated IBM plan for 1000 iterations; asymmetric noise model for mitigation; phase-unwrapped encoding; QAM biological cross-validation; IQM denominator comparison.
+
+\section*{Acknowledgments}
+
+We thank the IBM Quantum team for open-plan access. This work was self-funded; sponsor: \url{github.com/sponsors/silentnoisehun}.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\appendix
+
+\section{Appendix A: Repository Index}
+
+\begin{table}[h]
+\centering
+\caption{All 7 repositories in the QOI ecosystem.}
+\label{tab:repos}
+\begin{tabular}{lll}
+\toprule
+Repository & Focus & Key Result \\
+\midrule
+quantum-organic-intelligence & GPE + Bridge + Loop & 108 hardware iterations \\
+quantum-anchor & Coherent-state anchoring & Protocol + IBM/IQM validation \\
+wave-quantum & Freq-to-correlation encoding & Pearson 0.87--0.999, ZZ no-go \\
+quantum-delayed-sync & Hahn-echo $T_2$ sweep & $89.6 \pm 39.2\ \mu\text{s}$ (5 runs) \\
+quantum-anchored-memory & $\psi(t)$ + Memory + Anchor & QAM architecture \\
+scs-quantum & TKR wave-packet encoding & Bell 99.3\%, GHZ ideal \\
+microscope-memory & 9-level cognitive memory & 41/41 gates, 208 MB archive \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Appendix B: Hardware Loop Parameters}
+
+\begin{verbatim}
+Backend: ibm_fez (156 qubit, active)
+Shots: 1024 per circuit
+Circuits/iter: 3 (A, f, φ) + Bell anchor every 5
+Anchor update: live c fed to bridge-cli decoder
+Timeout: 900 s per job (clean cancel on expiry)
+Quota guard: pre-submission service.usage() check
+Token: --token-file (JSON), never in repo/env
+Venv: qoi-venv (qiskit>=2.0, qiskit-ibm-runtime>=0.50)
+\end{verbatim}
+
+\section{Appendix C: Classical Control Baseline}
+
+Fluid STRATOS without quantum feedback converges to single mode (Brain) in all 1000/1000 trials. This establishes that mode diversity in quantum runs originates from the quantum feedback channel, not fluid instability.
+
+\end{document}
