@@ -49,3 +49,26 @@ jobs:
         run: python scripts/gpe_fft_measurement.py
       - name: "the raw measurement summary"
         run: python scripts/summarize_hardware_run.py
+
+  paper:
+    name: "Build paper PDF"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: "Install TeX Live"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y texlive-full biber
+      - name: "Compile paper"
+        working-directory: paper
+        run: |
+          pdflatex aisc2027_unified_paper.tex
+          biber aisc2027_unified_paper
+          pdflatex aisc2027_unified_paper.tex
+          pdflatex aisc2027_unified_paper.tex
+      - name: "Upload PDF artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: aisc2027-paper
+          path: paper/aisc2027_unified_paper.pdf
+          retention-days: 30
