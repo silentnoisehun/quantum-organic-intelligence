@@ -63,7 +63,7 @@ jobs:
         working-directory: paper
         run: |
           pdflatex aisc2027_unified_paper.tex
-          biber aisc2027_unified_paper
+          bibtex aisc2027_unified_paper
           pdflatex aisc2027_unified_paper.tex
           pdflatex aisc2027_unified_paper.tex
       - name: "Upload PDF artifact"
