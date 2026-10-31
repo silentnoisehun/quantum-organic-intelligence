@@ -16,6 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - name: "Install numpy for parity tests"
+        run: pip install numpy
       - name: "fluid-stratos: build"
         run: cargo build --manifest-path crates/fluid-stratos/Cargo.toml
       - name: "fluid-stratos: regression tests"
