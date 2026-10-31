@@ -20,6 +20,12 @@ jobs:
         run: cargo build --manifest-path crates/fluid-stratos/Cargo.toml
       - name: "fluid-stratos: regression tests"
         run: cargo test --manifest-path crates/fluid-stratos/Cargo.toml
+      - name: "fluid-stratos: parity test (Rust vs fixture)"
+        run: |
+          cargo run --manifest-path crates/fluid-stratos/Cargo.toml --example gpe_parity > parity_rust.json
+          python scripts/check_parity_fixture.py parity_rust.json tests/fixtures/gpe_parity.json
+      - name: "fluid-stratos: serial vs parallel parity"
+        run: cargo test --manifest-path crates/fluid-stratos/Cargo.toml test_parallel_step -- --nocapture
       - name: "quantum-bridge: build"
         run: cargo build --manifest-path crates/quantum-bridge/Cargo.toml
       - name: "quantum-bridge: tests"

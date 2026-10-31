@@ -281,8 +281,13 @@ impl GpeSolver {
     /// csak a fizikai térben értelmezett. A V lépés a teljes `dt`-t viseli.
     ///
     /// 🧬 A CSILLAPÍTÁS a V lépésben van, a nemlineáris fázissal együtt.
-    /// A normalizálás után a damping a nemlineáris erőt gyengíti (nem
-    /// eltűnik: a `g·|ψ|²` a sűrűség ABSZOLÚT értékétől függ).
+    ///
+    /// 🧬 A CSILLAPÍTÁS LOKÁLIS (a disszipatív GPE `i·∂ψ/∂t = [... +
+    /// (g + iγ)·|ψ|² + V]ψ` alakja): a veszteség a HELYI sűrűséggel
+    /// arányos, `exp(-γ·dt·|ψ|²)`. Egy GLOBÁLIS `exp(-γ·dt)` skalár
+    /// szorzó a lépés végi normalizálással matematikailag kiesne
+    /// (minden cellára ugyanaz a tényező, a normalizálás pedig
+    /// kivonja), ezért az nem lehetne valódi disszipáció.
     pub fn step(&mut self) {
         let n = self.params.grid_size;
         let dt = self.params.dt;
@@ -381,9 +386,12 @@ impl GpeSolver {
     }
 
     /// Potenciál + nemlineáris lépés + csillapítás (fizikai tér)
+    ///
+    /// A csillapítás lokális: `exp(-γ·dt·|ψ|²)`. Így a disszipatív GPE
+    /// `(g + iγ)` tagját modellezzük, és a lépés végi normalizálás nem
+    /// nullázza ki (egy globális skalár igen).
     fn potential_step(&mut self, dt: f64, g: f64, hbar: f64, gamma: f64) {
         let n = self.params.grid_size;
-        let decay = (-gamma * dt).exp();
 
         for j in 0..n {
             for i in 0..n {
@@ -391,7 +399,10 @@ impl GpeSolver {
                 let density = self.work[idx].norm_sqr();
                 let v_total = self.potential[j][i] + g * density;
                 let phase = -dt * v_total / hbar;
-                self.work[idx] *= Complex::new(phase.cos(), phase.sin()) * decay;
+                // lokális veszteség: a sűrűbb (nagyobb |ψ|) cellák erősebben
+                // csillapulnak, ezért a γ valóban megváltoztatja a dinamikát
+                let loss = (-gamma * dt * density).exp();
+                self.work[idx] *= Complex::new(phase.cos(), phase.sin()) * loss;
             }
         }
     }

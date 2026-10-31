@@ -63,13 +63,13 @@ def init_psi(seed):
 
 def step(psi, live):
     if live:
-        psi = np.fft.ifft2(psi*KPH)
+        psi = np.fft.ifft2(np.fft.fft2(psi) * KPH)
     else:
         psi = psi*np.exp(-1j*DT*HBAR*K2/(4.0*MASS))
     dens = np.abs(psi)**2
-    psi = psi*np.exp(-1j*DT*(POT+G*dens)/HBAR)*DECAY
+    psi = psi*np.exp(-1j*DT*(POT+G*dens)/HBAR) * np.exp(-DAMPING * DT * dens)
     if live:
-        psi = np.fft.ifft2(psi*KPH)
+        psi = np.fft.ifft2(np.fft.fft2(psi) * KPH)
     else:
         psi = psi*np.exp(-1j*DT*HBAR*K2/(4.0*MASS))
     return normalize(psi)
@@ -134,6 +134,6 @@ print("  a suruseg-eloszlas mozgása:  dead %.3e  ->  live %.3e   (javulas: %.1e
     d["max_delta_density"], l["max_delta_density"], l["max_delta_density"]/max(d["max_delta_density"],1e-30)))
 print("  a 16 mód energia mozgása:  dead %.3e  ->  live %.3e   (javulas: %.1e x)" % (
     d["max_delta_mode_energy"], l["max_delta_mode_energy"], l["max_delta_mode_energy"]/max(d["max_delta_mode_energy"],1e-30)))
-with open(r"C:\Users\mater\.minimax\sessions\mvs_4be75a039e3e4dd2a6a370720f28065c\workspace\gpe-fft-fix-measurement.json","w") as fh:
+with open("gpe-fft-fix-measurement.json","w") as fh:
     json.dump(res, fh, indent=1)
 print("  kiirva: gpe-fft-fix-measurement.json")

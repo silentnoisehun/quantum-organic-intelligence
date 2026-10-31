@@ -107,17 +107,24 @@ def normalize(psi):
 
 def gpe_step(psi, live=True):
     """K/2 -> V -> K/2 split-step, valodi 2D FFT-vel (live=True) vagy
-       a gpe.rs dead fazis-rotaciojaval (live=False)."""
+       a gpe.rs dead fazis-rotaciojaval (live=False).
+
+       A csillapitas LOKALIS (a disszipativ GPE `(g + i*gamma)` alakja):
+       `exp(-gamma*dt*|psi|^2)`. Egy globalis `exp(-gamma*dt)` skalart a
+       lepes vegi normalizalas kivenne -> a damping matematikailag no-op
+       lenne. A Rust solverrel (crates/fluid-stratos/src/gpe.rs) BITRE
+       egyezik; ezt a tests/fixtures/gpe_parity.json fixture ellenorzi.
+    """
     if live:
-        psi = np.fft.ifft2(psi * KPH)
+        psi = np.fft.ifft2(np.fft.fft2(psi) * KPH)
     else:
         # a gpe.rs dead kod: a fazis-rotacio a RACsINDEX-térben (nem k-térben)
         psi = psi * np.exp(-1j * DT * HBAR * K2 / (4.0*MASS))
     dens = np.abs(psi)**2
     v = POT + G * dens
-    psi = psi * np.exp(-1j * DT * v / HBAR) * DECAY
+    psi = psi * np.exp(-1j * DT * v / HBAR) * np.exp(-DAMPING * DT * dens)
     if live:
-        psi = np.fft.ifft2(psi * KPH)
+        psi = np.fft.ifft2(np.fft.fft2(psi) * KPH)
     else:
         psi = psi * np.exp(-1j * DT * HBAR * K2 / (4.0*MASS))
     return normalize(psi)

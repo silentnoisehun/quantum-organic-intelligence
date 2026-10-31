@@ -380,10 +380,13 @@ def main():
           f"(limit {usage_before.get('usage_limit_seconds')} mp)")
 
     session_ctx = None
+    session_error = None
+    session_active = False
     if not args.no_session:
         try:
             session_ctx = Session(backend=backend)
             session_ctx.__enter__()
+            session_active = True
             print("session megnyitva — a QPU fenntartva a hurok idejére")
         except Exception as exc:  # noqa: BLE001 — a csomag szabálya dönt
             # 🧬 AZ OPEN CSOMAG NEM ENGED SESSIONT ("not authorized to run a
@@ -392,6 +395,7 @@ def main():
             # tippeljük.
             print(f"! a session nem elérhető ezen a csomagon: {type(exc).__name__}")
             print("  → job mód: minden iteráció külön sorba áll. A várakozást mérjük.")
+            session_error = f"{type(exc).__name__}: {exc}"
             session_ctx = None
     try:
         sampler = SamplerV2(mode=session_ctx if session_ctx is not None else backend)
@@ -436,7 +440,14 @@ def main():
         "anchor_every": args.anchor_every,
         "gpe_steps": args.gpe_steps,
         "feedback": args.feedback,
-        "session": not args.no_session,
+        # A KÉRT mód és a TÉNYLEGESEN használt mód különbsége: az open
+        # csomag nem enged sessiont, ezért a kérés job-módra esik vissza.
+        # A "session" mező a régi (téves) jelentését tartalmazta: ez a
+        # felhasználó szándéka volt, nem a tényleges futásmód.
+        "session_requested": not args.no_session,
+        "session_active": session_active,
+        "session_error": session_error,
+        "execution_mode": "session" if session_active else "job",
         "total_qpu_seconds": total_qpu,
         "total_wall_seconds": total_wall,
         "usage_before": usage_before,
