@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.1] — 2026-10-31
+
+### Fixed
+
+- **Local damping in GPE solver** (`crates/fluid-stratos/src/gpe.rs`): the
+  dissipative term is now `exp(-γ·dt·|ψ|²)` (local, density-dependent) instead
+  of the global `exp(-γ·dt)` scalar which was a no-op after normalization.
+  This makes the γ parameter actually affect the dynamics. The fix is
+  documented in `gpe.rs` lines 285–290 and 388–408.
+
 ## [0.2.0] — 2026-10-27
 
 ### Added
@@ -47,6 +57,19 @@
   when using the open plan"), so the queue wait had to be measured
   instead of assumed: 6.8 s to 137.5 s per iteration.
 
+### Corrected numbers (post-review)
+
+The external review corrected the Python fluid port's split-step operator
+(`fft → KPH → ifft` instead of double `ifft` without forward). The Rust
+crate was never affected. The corrected numbers in the paper supersede
+the earlier ones:
+
+- max |Δ| density: **2.780** (was 2.766)
+- 16-mode energy motion: **9.420** (was 8.444)
+- H/Hmax (quantum branch): **0.5268** (was 0.4355)
+- TV distance (quantum vs classical): **0.3730** (was 0.2960)
+- Classical control: **968/1000** in one mode + 5 others (was "1000/1000 single mode")
+
 ### Known limitations
 
 The 1000-iteration protocol is **not runnable on the open plan**: at the
@@ -64,7 +87,7 @@ protocol. The report states this as measured, not as an estimate.
   transforms). The previous implementation used a phase rotation in index
   space with no transform at all, which made the density distribution
   mathematically invariant (measured: max |Δ| = 1.275e-13 over 500 steps).
-  After the fix: max |Δ| = 2.766, a 2.2e13× improvement.
+  After the fix: max |Δ| = **2.780**, a 2.2e13× improvement.
 - Three regression tests that **fail on the pre-fix code**:
   the density distribution must move, the 16 mode energies must change,
   and the normalization must hold across FFT steps.
@@ -77,7 +100,8 @@ protocol. The report states this as measured, not as an estimate.
   the difference is 0.137σ and therefore not detectable at 1024 shots.
 - **Quantum–classical loop simulation** (`scripts/quantum_loop_sim.py`) with
   four branches: quantum loop, classical control, uniform null model, and
-  the dead GPE. Measured H/Hmax: 0.4355 / 0.0000 / 0.9962 / 0.0000.
+  the dead GPE. **Corrected** H/Hmax: 0.5268 / 0.0000 / 0.9962 / 0.0000
+  (was 0.4355 / 0.0000 / 0.9962 / 0.0000).
 - Measurement reports in `docs/`.
 
 ### Fixed

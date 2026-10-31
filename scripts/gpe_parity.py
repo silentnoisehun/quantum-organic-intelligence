@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Parity script: same deterministic initial state as Rust, 200 steps.
+"""Parity script: write common ψ₀ fixture + run 200 steps.
 
 Outputs JSON matching the Rust binary format.
 """
 import json
 import numpy as np
 import math
+import sys
 
 # Same constants as Rust
 N = 32
@@ -93,8 +94,28 @@ def mode_energies(psi):
         out[m] = (dens * w).sum()
     return out
 
-# Run
-psi = init_psi(20261026)
+# Generate common ψ₀ fixture
+if len(sys.argv) > 1 and sys.argv[1] == "--dump-psi0":
+    psi0 = init_psi(20261026)
+    psi0_data = {
+        "re": np.real(psi0).tolist(),
+        "im": np.imag(psi0).tolist(),
+        "grid_size": N,
+        "domain_size": DOMAIN,
+    }
+    with open("tests/fixtures/psi0.json", "w") as f:
+        json.dump(psi0_data, f, indent=1)
+    print("Wrote tests/fixtures/psi0.json")
+    sys.exit(0)
+
+# Run with optional loaded ψ₀
+if len(sys.argv) > 1 and sys.argv[1] == "--load-psi0":
+    with open("tests/fixtures/psi0.json", "r") as f:
+        psi0_data = json.load(f)
+    psi = np.array(psi0_data["re"]) + 1j * np.array(psi0_data["im"])
+else:
+    psi = init_psi(20261026)
+
 e0 = mode_energies(psi)
 rho0 = np.abs(psi) ** 2
 
