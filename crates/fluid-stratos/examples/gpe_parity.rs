@@ -3,8 +3,8 @@
 
 use fluid_stratos::{GpeParams, GpeSolver};
 use num_complex::Complex;
-use std::fs;
 use serde::Deserialize;
+use std::fs;
 
 #[derive(Deserialize)]
 struct Psi0Fixture {
@@ -89,12 +89,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Save initial density field (element-wise |ψ|²)
     let e0 = mode_energies(&solver.psi, &solver.params);
-    let rho0: Vec<f64> = solver
-        .psi
-        .iter()
-        .flatten()
-        .map(|v| v.norm_sqr())
-        .collect();
+    let rho0: Vec<f64> = solver.psi.iter().flatten().map(|v| v.norm_sqr()).collect();
 
     // Run 200 steps
     for _ in 0..200 {
@@ -102,12 +97,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let e1 = mode_energies(&solver.psi, &solver.params);
-    let rho1: Vec<f64> = solver
-        .psi
-        .iter()
-        .flatten()
-        .map(|v| v.norm_sqr())
-        .collect();
+    let rho1: Vec<f64> = solver.psi.iter().flatten().map(|v| v.norm_sqr()).collect();
 
     let max_delta_density = rho0
         .iter()
