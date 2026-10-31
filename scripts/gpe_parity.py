@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Parity script: write common ψ₀ fixture + run 200 steps.
+"""Parity script: write common psi₀ fixture + run 200 steps.
 
 Outputs JSON matching the Rust binary format.
 """
@@ -94,7 +94,7 @@ def mode_energies(psi):
         out[m] = (dens * w).sum()
     return out
 
-# Generate common ψ₀ fixture
+# Generate common psi₀ fixture
 if len(sys.argv) > 1 and sys.argv[1] == "--dump-psi0":
     psi0 = init_psi(20261026)
     psi0_data = {
@@ -108,7 +108,7 @@ if len(sys.argv) > 1 and sys.argv[1] == "--dump-psi0":
     print("Wrote tests/fixtures/psi0.json")
     sys.exit(0)
 
-# Run with optional loaded ψ₀
+# Run with optional loaded psi₀
 if len(sys.argv) > 1 and sys.argv[1] == "--load-psi0":
     with open("tests/fixtures/psi0.json", "r") as f:
         psi0_data = json.load(f)
