@@ -3,9 +3,8 @@
 
 use fluid_stratos::{GpeParams, GpeSolver};
 use num_complex::Complex;
-use rand_chacha::ChaCha8Rng;
 use rand::{Rng, SeedableRng};
-use serde_json;
+use rand_chacha::ChaCha8Rng;
 
 fn genome_positions(n: usize) -> Vec<(f64, f64)> {
     let center = n as f64 / 2.0;
@@ -13,7 +12,10 @@ fn genome_positions(n: usize) -> Vec<(f64, f64)> {
     let mut pos = vec![(center, center)];
     for k in 0..6 {
         let a = 2.0 * std::f64::consts::PI * k as f64 / 6.0;
-        pos.push((center + radius * 0.5 * a.cos(), center + radius * 0.5 * a.sin()));
+        pos.push((
+            center + radius * 0.5 * a.cos(),
+            center + radius * 0.5 * a.sin(),
+        ));
     }
     for k in 0..9 {
         let a = 2.0 * std::f64::consts::PI * k as f64 / 9.0;
@@ -28,12 +30,12 @@ fn mode_energies(psi: &[Vec<Complex<f64>>], params: &GpeParams) -> Vec<f64> {
     let mut out = Vec::with_capacity(16);
     for (px, py) in positions.iter().take(16) {
         let mut e = 0.0;
-        for i in 0..n {
-            for j in 0..n {
+        for (i, row) in psi.iter().enumerate().take(n) {
+            for (j, val) in row.iter().enumerate().take(n) {
                 let d = ((i as f64 - px).powi(2) + (j as f64 - py).powi(2)).sqrt();
                 if d < 5.0 {
                     let weight = (-(d * d) / (2.0 * 9.0)).exp();
-                    e += psi[i][j].norm_sqr() * weight;
+                    e += val.norm_sqr() * weight;
                 }
             }
         }
@@ -72,10 +74,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let re: f64 = rng.gen_range(-0.1..0.1);
             let im: f64 = rng.gen_range(-0.1..0.1);
-            solver.psi[j][i] = Complex::new(
-                (re * gauss),
-                (im * gauss),
-            );
+            solver.psi[j][i] = Complex::new(re * gauss, im * gauss);
         }
     }
 
@@ -95,9 +94,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Save initial energies
     let e0 = mode_energies(&solver.psi, &solver.params);
-    let rho0: Vec<f64> = solver.psi.iter().map(|row| {
-        row.iter().map(|v| v.norm_sqr()).sum()
-    }).collect();
+    let rho0: Vec<f64> = solver
+        .psi
+        .iter()
+        .map(|row| row.iter().map(|v| v.norm_sqr()).sum())
+        .collect();
 
     // Run 200 steps
     for _ in 0..200 {
@@ -105,22 +106,34 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let e1 = mode_energies(&solver.psi, &solver.params);
-    let rho1: Vec<f64> = solver.psi.iter().map(|row| {
-        row.iter().map(|v| v.norm_sqr()).sum()
-    }).collect();
+    let rho1: Vec<f64> = solver
+        .psi
+        .iter()
+        .map(|row| row.iter().map(|v| v.norm_sqr()).sum())
+        .collect();
 
-    let max_delta_density = rho0.iter().zip(rho1.iter())
+    let max_delta_density = rho0
+        .iter()
+        .zip(rho1.iter())
         .map(|(a, b)| (a - b).abs())
         .fold(0.0, f64::max);
-    let max_delta_mode_energy = e0.iter().zip(e1.iter())
+    let max_delta_mode_energy = e0
+        .iter()
+        .zip(e1.iter())
         .map(|(a, b)| (a - b).abs())
         .fold(0.0, f64::max);
-    let argmax_initial = e0.iter().enumerate()
+    let argmax_initial = e0
+        .iter()
+        .enumerate()
         .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-        .map(|(i, _)| i).unwrap();
-    let argmax_final = e1.iter().enumerate()
+        .map(|(i, _)| i)
+        .unwrap();
+    let argmax_final = e1
+        .iter()
+        .enumerate()
         .max_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-        .map(|(i, _)| i).unwrap();
+        .map(|(i, _)| i)
+        .unwrap();
 
     let out = serde_json::json!({
         "max_delta_density": max_delta_density,
