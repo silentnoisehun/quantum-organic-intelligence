@@ -7,6 +7,13 @@ Mates utasitasara: "szamolj elobb szimulacioval, elore" + "most merjunk meg"
 Allitas: ahol meresi bizonyitek van, ott a szam. Ahol nincs, ott
 "nem verifikalva". Semmi nem szerepel itt forras nelkul.
 
+=== ERRATUM (2026-10-31, post-external-review) ===
+A jelentes korabbiertekei (max |Δ| density 2,766; 16-mod energia 8,444;
+H/Hmax 0,4355; TV 0,2960; "1000/1000 egyetlen mod") a 2026-10-31-es
+korrekció előttiek. A javított számok: 2,780 / 9,420 / 0,5268 / 0,3730 /
+968/1000 + 5 mod. A CHANGELOG 0.2.1 bejegyzése a változások listáját tartalmazza.
+===
+
 --------------------------------------------------------------------------------
 0. A FENEK: MI TORTENT, ES MIT MERETTUNK
 --------------------------------------------------------------------------------

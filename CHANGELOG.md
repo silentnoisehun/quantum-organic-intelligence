@@ -41,7 +41,7 @@
 - **The 16-mode argmax on hardware: 0/6 = 0.00%** — the quantum path
   never reproduced the classical winner (Brain); the winners were
   Creativity (4×) and Logic (2×). Consistent with the simulated 38.65%
-  at the same Bell fidelity (p = 0.3865⁶ = 5.2%).
+  at the same Bell fidelity ((1−0.3865)⁶ = 5.3%).
 - **The decoding is accurate without a correction**: the amplitude
   channel's mean absolute error is 0.026 with a mean signed error of
   +0.0125 (i.e. unbiased within the shot noise).

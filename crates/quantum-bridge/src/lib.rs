@@ -12,7 +12,7 @@
 //! A klasszikus argmax ezzel szemben **100%** (0 statisztikai hiba).
 //! Az ok: a Brain-vs-Creativity rés mindössze 1,85%, ami 1024 shot-tal
 //! **0,14σ** — a kvantum-út a jelenlegi architektúrában NEM KIMUTATHATÓ.
-//! 3σ-hoz 248 294 shot kellene (242× a QDS, 124× a wave futás).
+//! 3σ-hoz ~492 000 shot kellene (~481 QDS-job 1024 lövéssel).
 //!
 //! 🧬 A RÉTEG CÉLJA ezért nem az, hogy a kvantumút nyerjen, hanem hogy
 //! **mérhető és látható legyen a különbség** a két út között. Aki ezt

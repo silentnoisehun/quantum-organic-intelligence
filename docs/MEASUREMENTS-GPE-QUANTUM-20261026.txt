@@ -4,6 +4,14 @@ Datum: 2026-10-26
 Szerzo: Mavis (MiniMax Code runtime) — Mate gepen, D:\codex
 ================================================================================
 
+=== ERRATUM (2026-10-31, post-external-review) ===
+A kovetkezok a javított számok; a korabbi értékek (2,766 / 8,444 / 0,4355 / 0,2960 /
+"1000/1000 egyetlen mód") a 2026-10-31-es kód-javítás előttiek, és a papírban
+már nem szerepelnek. A pontos értékek: max |Δ| density 2,780; 16-mod energia
+9,420; H/Hmax 0,5268; TV 0,3730; klasszikus kontroll 968/1000 + 5 másik mód.
+A CHANGELOG 0.2.1 bejegyzése a változások listáját tartalmazza.
+===
+
 0. A KEZDO ALLAPOT (a bemeretes before)
 
 A ket kerdest Mate adta:

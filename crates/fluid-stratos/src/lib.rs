@@ -13,8 +13,8 @@
 //!   a max/mean 1112,84 (a folyadék egyetlen pontba koncentrált)
 //!
 //! Mért bizonyíték a javítás után:
-//!   a sűrűség-eloszlás max |Δ| = 2,766  (2,2e13× javulás)
-//!   a 16 mód energiája max |Δ| = 8,444  (4,3e14× javulás)
+//!   a sűrűség-eloszlás max |Δ| = 2,780  (2,2e13× javulás)
+//!   a 16 mód energiája max |Δ| = 9,420  (4,8e14× javulás)
 //!   a max/mean 46,99 (a folyadék kiterjedt)
 //!   a koherencia 0,996203 (a jelző életre kelt)
 

@@ -15,16 +15,15 @@ HASZNÁLAT
     python scripts/hardware_measure.py --local
 
     # valódi QPU
-    python scripts/hardware_measure.py --backend ibm_brisbane --shots 1024
+    python scripts/hardware_measure.py --backend ibm_fez --shots 1024
 
     # a 16 módos argmax-pontosság 50 futással
     python scripts/hardware_measure.py --mode-trials 50 --shots 1024
 
 A KULCS: az `IBM_QUANTUM_API_TOKEN` környezetváltozóban (SOSE a
-parancssorban, SOSE fájlba írva). A `scs_quantum` csomag a saját
-`.env` fájlját is betölti, ha az létezik.
+parancssorban, SOSE fájlba írva).
 
-A nyers mérési adatok a `measurement_raw/` mappába kerülnek — ez NINCS
+A nyers mérési adatok a `measurement_raw/` mappába kerülnek — ez
 verziókövetve (lásd a .gitignore).
 """
 import argparse
@@ -45,7 +44,9 @@ def _load_scs():
         pass
     p = os.environ.get("SCS_QUANTUM_PATH")
     if not p:
-        p = r"D:\codex\quantum-lab\scs-quantum\python"
+        # Default to relative path from repo root for portability
+        repo_root = Path(__file__).parent.parent
+        p = str(repo_root / "external" / "scs-quantum" / "python")
     if os.path.isdir(p):
         sys.path.insert(0, p)
         import tkr_measure, tkr_ibm
